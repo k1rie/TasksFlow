@@ -7,7 +7,6 @@ router.post("/createTask",createTask)
 
 router.get("/getTasks/:id",getTasks)
 
-router.post("/changeRateTask",changeRateTask)
 
 router.patch("/changeRateTask",changeRateTask)
 

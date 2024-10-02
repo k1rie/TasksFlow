@@ -5,17 +5,16 @@ import XlsxPopulate from "xlsx-populate"
 export const getClassrooms= async (req,res)=>{
    const data = await pool.query("SELECT * FROM classrooms")
    res.send(data[0])
-   console.log(data[0])
     }
 
     export const createClassroom = async (req,res)=>{
 try {
-   console.log(req.body)
 
    const data = await pool.query("INSERT INTO classrooms (especialidad, grado, grupo,alumnos) VALUES (?,?,?,0)"
        
        ,[req.body.especialidad,req.body.grado,req.body.grupo])
-       
+       console.log(data[0].insertId)
+       res.send(data)
 } catch (error) {
    res.send(error)
 }

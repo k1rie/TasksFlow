@@ -3,15 +3,12 @@ import {pool} from "../db.js"
 export const createTask = async (req,res)=>{
     try {
         req.body.alumnosTask.forEach(async(element) => {
-try {
     await pool.query("INSERT INTO tasks_students (name,rate,final_rate,task_for) VALUES (?,?,?,?)",[req.body.nombre,req.body.rate,req.body.finalRate,element.id])
 
-} catch (error) {
-    res.send(error)
-}
         });
         await pool.query("INSERT INTO tasks (name,rate,grade,groupTask,area) VALUES (?,?,?,?,?)",[req.body.nombre,req.body.rate,req.body.grade,req.body.group,req.body.area])
-        
+        res.send("todo bien")
+
     } catch (error) {
         res.send(error)
     }
