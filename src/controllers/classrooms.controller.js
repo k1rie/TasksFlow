@@ -16,6 +16,7 @@ try {
        console.log(data[0].insertId)
        res.send(data)
 } catch (error) {
+   console.log(error)
    res.send(error)
 }
         
