@@ -1,0 +1,19 @@
+import express from "express"
+import cors from "cors"
+import classroomsRoutes from "./routes/classrooms.routes.js"
+import studentsRoutes from "./routes/students.routes.js"
+import tasksRoutes from "./routes/tasks.routes.js"
+
+
+const App = express()
+App.use(cors())
+App.use(express.json())
+
+App.listen(3001,()=>{
+console.log("listening on")
+})
+
+App.use(classroomsRoutes)
+App.use(studentsRoutes)
+App.use(tasksRoutes)
+
