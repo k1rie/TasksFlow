@@ -7,6 +7,7 @@ export const createTask = async (req,res)=>{
 
         });
         await pool.query("INSERT INTO tasks (name,rate,grade,groupTask,area) VALUES (?,?,?,?,?)",[req.body.nombre,req.body.rate,req.body.grade,req.body.group,req.body.area])
+       await pool.release()
         res.send("todo bien")
 
     } catch (error) {
@@ -20,6 +21,7 @@ export const getTasks = async (req,res)=>{
    
     try {
         const data = await pool.query("SELECT * FROM tasks_students WHERE task_for = ?",[req.params.id])
+        await pool.release()
         res.send(data[0])  
     } catch (error) {
         res.send(error)
@@ -33,6 +35,7 @@ export const getTasksGroup = async (req,res)=>{
    
    try {
     const data = await pool.query("SELECT * FROM tasks WHERE grade = ? AND groupTask = ? AND area = ?",[req.params.grade,req.params.group,req.params.area])
+    await pool.release()
     res.send(data[0])
    } catch (error) {
     res.send(error)
@@ -43,6 +46,7 @@ export const getTasksGroup = async (req,res)=>{
     export const changeRateTask = async (req,res)=>{
   try {
     const data = await pool.query("UPDATE tasks_students SET final_rate = ? WHERE task_for = ? AND name = ?",[req.body.newRate,req.body.idStudent,req.body.taskName])
+    await pool.release()
     res.send(data)
   } catch (error) {
     res.send(error)
@@ -61,7 +65,7 @@ export const getTasksGroup = async (req,res)=>{
         })
         await pool.query("SET SQL_SAFE_UPDATES = 1")
 
-
+        await pool.release()
         res.send(data)
       } catch (error) {
         res.send(error)
@@ -79,7 +83,7 @@ export const getTasksGroup = async (req,res)=>{
             await pool.query("UPDATE tasks_students SET rate = ? WHERE  task_for = ? AND name = ?",[req.body.newRate,element.id,req.body.nameTask])
       
             })
-    
+            await pool.release()
             res.send(data)
           } catch (error) {
            res.send(error)
@@ -95,6 +99,7 @@ export const getTasksGroup = async (req,res)=>{
     export const downloadExcel = async (req,res)=>{
       try {
         const data = await pool.query("UPDATE tasks_students SET final_rate = ? WHERE task_for = ? AND name = ?",[req.body.newRate,req.body.idStudent,req.body.taskName])
+        await pool.release()
         res.send(data)
       } catch (error) {
         res.send(error)
