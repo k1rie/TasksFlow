@@ -4,7 +4,7 @@ import XlsxPopulate from "xlsx-populate"
 
 export const getClassrooms= async (req,res)=>{
    const data = await pool.query("SELECT * FROM classrooms")
-   await pool.release()
+   
    res.send(data[0])
     }
 
@@ -15,7 +15,6 @@ try {
        
        ,[req.body.especialidad,req.body.grado,req.body.grupo])
        console.log(data[0].insertId)
-       await pool.release()
        res.send(data)
 } catch (error) {
    console.log(error)
@@ -39,7 +38,6 @@ try {
                   )
                 });
                 await pool.query("SET SQL_SAFE_UPDATES = 1")
-                await pool.release()
                 res.send("Todo bien")
           } catch (error) {
             res.send(error)
@@ -50,7 +48,6 @@ try {
          export const deleteClassroom= async (req,res)=>{
            try {
             const data = await pool.query("DELETE FROM classrooms WHERE id = ? ",[req.params.id])
-            await pool.release()
             res.send(data[0])
             console.log(data[0])
            } catch (error) {
@@ -113,7 +110,6 @@ if(contador2  === tasks[0].length+1){
                                  // Configurar las cabeceras HTTP para la descarga
                                  res.setHeader('Content-Disposition', 'attachment; filename="reporte.xlsx"');
                                  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                                 await pool.release()
                                  res.send(excelBuffer);
                          
               })
