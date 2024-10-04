@@ -30,7 +30,12 @@ rows.map((e)=>{
 export const getStudents = async(req,res)=>{
     try{
         const data = await pool.query("SELECT * FROM students WHERE especialidad = ? AND grado = ? AND grupo = ?",[req.params.especialidad,req.params.grado,req.params.grupo])
-        res.send(data[0])
+        if(data[0].length === 0){
+            res.send([])
+        }else{
+            res.send(data[0])
+        }
+        
     }catch(error){
 res.send(error)
     }
