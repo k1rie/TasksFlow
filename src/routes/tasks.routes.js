@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {createTask,getTasks,changeRateTask, getTasksGroup, changeNameTask, changeRateTaskGroup} from "../controllers/tasks.controller.js"
+import {createTask,getTasks,changeRateTask, getTasksGroup, changeNameTask, changeRateTaskGroup, removeTask} from "../controllers/tasks.controller.js"
 
 const router = Router()
 
@@ -16,6 +16,8 @@ router.patch("/changeRateTaskGroup",changeRateTaskGroup)
 
 
 router.get("/getTasksGroup/:grade/:group/:area",getTasksGroup)
+
+router.delete("/deleteTask",deleteTask)
 
 
 

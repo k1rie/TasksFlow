@@ -29,7 +29,7 @@ rows.map((e)=>{
 
 export const getStudents = async(req,res)=>{
     try{
-        const data = await pool.query("SELECT * FROM students WHERE especialidad = ? AND grado = ? AND grupo = ?",[req.params.especialidad,req.params.grado,req.params.grupo])
+        const data = await pool.query("SELECT * FROM students ORDER BY nombre ASC WHERE especialidad = ? AND grado = ? AND grupo = ?",[req.params.especialidad,req.params.grado,req.params.grupo])
         res.send(data[0])
     }catch(error){
 res.send(error)

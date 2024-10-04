@@ -2,17 +2,35 @@ import {pool} from "../db.js"
 
 export const createTask = async (req,res)=>{
     try {
-        req.body.alumnosTask.forEach(async(element) => {
+      await pool.query("INSERT INTO tasks (name,rate,grade,groupTask,area) VALUES (?,?,?,?,?)",[req.body.nombre,req.body.rate,req.body.grade,req.body.group,req.body.area])
+
+        await req.body.alumnosTask.forEach(async(element) => {
     await pool.query("INSERT INTO tasks_students (name,rate,final_rate,task_for) VALUES (?,?,?,?)",[req.body.nombre,req.body.rate,req.body.finalRate,element.id])
 
         });
-        await pool.query("INSERT INTO tasks (name,rate,grade,groupTask,area) VALUES (?,?,?,?,?)",[req.body.nombre,req.body.rate,req.body.grade,req.body.group,req.body.area])
         res.send("todo bien")
 
     } catch (error) {
         res.send(error)
     }
    
+
+}
+
+export const deleteTask = async (req,res)=>{
+  try {
+    await pool.query("DELETE FROM tasks WHERE id = ?",[req.body.id])
+
+      await req.body.alumnosTask.forEach(async(element) => {
+  await pool.query("DELETE FROM tasks_students WHERE name = ? AND task_for = ?",[req.body.nameTask,element.id])
+
+      });
+      res.send("todo bien")
+
+  } catch (error) {
+      res.send(error)
+  }
+ 
 
 }
 
