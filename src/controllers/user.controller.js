@@ -6,11 +6,18 @@ export const createUser = async (req,res) =>{
 
 }
 
-export const getUser = (req,res) =>{
-    const [row,info] = pool.query("SELECT INTO users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
-    if(row.lenght > 0){
+export const getUser = async (req,res) =>{
+    const authHeader = req.headers['authorization'];
+    const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [emailUser, password] = credentials.split(':');
+  console.log(emailUser)
+    const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
+    console.log(row)
+    if(row.length > 0){
+        
         res.send({response:true,
-            data: row
+            data: row[0]
         })
     }else{
         res.send(false)

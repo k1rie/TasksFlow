@@ -4,7 +4,7 @@ export const createStudent = async(req,res)=>{
 try {
     const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
 
-    if(row.lenght > 0){
+    if(row.length > 0){
 
     const data = await pool.query("INSERT INTO students (nombre,apellidos,correo,especialidad,grado,grupo) VALUES(?,?,?,?,?,?)",
     [req.body.nombre,req.body.apellidos,req.body.correo,req.body.especialidad,req.body.grado,req.body.grupo])
@@ -32,10 +32,14 @@ rows.map((e)=>{
 }
 
 export const getStudents = async(req,res)=>{
+    const authHeader = req.headers['authorization'];
+    const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [emailUser, password] = credentials.split(':');
     try{
-        const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
+        const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
 
-        if(row.lenght > 0){
+        if(row.length > 0){
         const data = await pool.query("SELECT * FROM students WHERE especialidad = ? AND grado = ? AND grupo = ?",[req.params.especialidad,req.params.grado,req.params.grupo])
         if(data[0].length === 0){
             res.send([])
@@ -53,10 +57,14 @@ res.send(error)
 }
 
 export const getStudent = async(req,res)=>{
+    const authHeader = req.headers['authorization'];
+    const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [emailUser, password] = credentials.split(':');
     try{
-        const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
+        const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
 
-        if(row.lenght > 0){
+        if(row.length > 0){
         const data = await pool.query("SELECT * FROM students WHERE id = ?",[req.params.id])
         res.send(data[0])
         }
@@ -72,7 +80,7 @@ export const deleteStudent = async(req,res)=>{
     try{
         const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
 
-        if(row.lenght > 0){
+        if(row.length > 0){
         await pool.query("SET FOREIGN_KEY_CHECKS=0")
         const data = await pool.query("DELETE FROM students WHERE id = ? ",[req.params.id])
         await pool.query("SET FOREIGN_KEY_CHECKS=1")
@@ -90,7 +98,7 @@ export const updateStudent = async(req,res)=>{
     try{
         const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
 
-    if(row.lenght > 0){
+    if(row.length > 0){
         const data = await pool.query("UPDATE students SET nombre = ?, apellidos = ?, correo = ? WHERE id = ?",[req.body.nombre,req.body.apellidos,req.body.correo,req.params.id])
         res.send(data[0])
     }
