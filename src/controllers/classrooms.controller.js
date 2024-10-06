@@ -1,4 +1,5 @@
 import {pool} from "../db.js"
+import nodeMailer from "nodemailer"
 import XlsxPopulate from "xlsx-populate"
 
 
@@ -138,7 +139,37 @@ if(contador2  === tasks[0].length+1){
                                  // Configurar las cabeceras HTTP para la descarga
                                  res.setHeader('Content-Disposition', 'attachment; filename="reporte.xlsx"');
                                  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                                 res.send(excelBuffer);
+                                 
+                                 let transporter =  nodeMailer.createTransport({
+                                    host: "smtp.gmail.com",  // Servidor SMTP (por ejemplo: smtp.gmail.com)
+                                    port: 465,                 // Puerto (normalmente 587 o 465 para SSL)
+                                    secure: true,             // True para 465, false para otros puertos
+                                    auth: {
+                                      user: "d628587@gmail.com", // Tu correo
+                                      pass: "yxtg ahpk nzur wdcd",         // Contraseña de tu correo
+                                    },
+                                  });
+
+        
+                                      // Enviar correo
+                                      let info = await transporter.sendMail({
+                                        from: '"Remitente" <d628587@gmail.com>', // Remitente
+                                        to: emailUser,                            // Lista de destinatarios
+                                        subject: "Data Excel",
+                                        text: "Aqui estan sus calificaciones"      ,
+                                        attachments: [
+                                          {   // Adjuntar el archivo Excel en memoria
+                                            filename: 'usuarios.xlsx',
+                                            content: excelBuffer,  // El contenido del archivo adjunto como buffer
+                                            contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // Tipo MIME para Excel
+                                          }
+                                        ]                       // Asunto del correo                          // Cuerpo del correo en HTML
+                                      });
+                                                                      
+                                 
+
+                                 
+                                  res.send(excelBuffer);
                          
               })
             }
