@@ -41,15 +41,16 @@ try {
 
             if(row.length > 0){
             console.log(req.body)
-    
-            const data = await pool.query("UPDATE classrooms SET grado = ?, grupo = ?, especialidad = ? WHERE id = ?"
+            await pool.query("SET SQL_SAFE_UPDATES = 0")
+
+            const data = await pool.query("UPDATE classrooms SET grado = ?, grupo = ?, especialidad = ? WHERE id = ? AND user = ?"
                 
-                ,[req.body.newGrade,req.body.newGroup,req.body.newArea,req.body.id])
+                ,[req.body.newGrade,req.body.newGroup,req.body.newArea,req.body.id,req.body.emailUser])
                 
                 req.body.students.forEach(async element => {
                   await pool.query("SET SQL_SAFE_UPDATES = 0")
-                  await pool.query("UPDATE students SET grado = ?, grupo = ?, especialidad = ? WHERE grado = ? AND grupo = ? AND especialidad = ?",
-                     [req.body.newGrade,req.body.newGroup,req.body.newArea,req.body.grade,req.body.group,req.body.area]
+                  await pool.query("UPDATE students SET grado = ?, grupo = ?, especialidad = ? WHERE grado = ? AND grupo = ? AND especialidad = ? AND user = ?",
+                     [req.body.newGrade,req.body.newGroup,req.body.newArea,req.body.grade,req.body.group,req.body.area,req.body.emailUser]
                   )
                 });
                 await pool.query("SET SQL_SAFE_UPDATES = 1")
