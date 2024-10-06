@@ -8,10 +8,10 @@ try {
 
     const data = await pool.query("INSERT INTO students (nombre,apellidos,correo,especialidad,grado,grupo,user) VALUES(?,?,?,?,?,?,?)",
     [req.body.nombre,req.body.apellidos,req.body.correo,req.body.especialidad,req.body.grado,req.body.grupo,req.body.emailUser])
-    const group = await pool.query("SELECT * FROM classrooms WHERE especialidad = ? AND grado = ? AND grupo = ?",
-        [req.body.especialidad,req.body.grado,req.body.grupo]
+    const group = await pool.query("SELECT * FROM classrooms WHERE especialidad = ? AND grado = ? AND grupo = ? AND user = ?",
+        [req.body.especialidad,req.body.grado,req.body.grupo,req.body.emailUser]
     )
-    const [rows,info] = await pool.query("SELECT * FROM tasks WHERE area = ? AND grade = ? AND groupTask = ?",[req.body.especialidad,req.body.grado,req.body.grupo])
+    const [rows,info] = await pool.query("SELECT * FROM tasks WHERE area = ? AND grade = ? AND groupTask = ? AND user = ?",[req.body.especialidad,req.body.grado,req.body.grupo,req.body.emailUser])
 
     if(rows.length > 0){
 rows.map((e)=>{
