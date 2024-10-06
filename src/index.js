@@ -3,6 +3,7 @@ import cors from "cors"
 import classroomsRoutes from "./routes/classrooms.routes.js"
 import studentsRoutes from "./routes/students.routes.js"
 import tasksRoutes from "./routes/tasks.routes.js"
+import userRoutes from "./routes/user.routes.js"
 
 
 const App = express()
@@ -16,4 +17,4 @@ console.log("listening on")
 App.use(classroomsRoutes)
 App.use(studentsRoutes)
 App.use(tasksRoutes)
-
+App.use(userRoutes)

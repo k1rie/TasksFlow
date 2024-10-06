@@ -3,19 +3,27 @@ import XlsxPopulate from "xlsx-populate"
 
 
 export const getClassrooms= async (req,res)=>{
+   const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
+
+   if(row.lenght > 0){
    const data = await pool.query("SELECT * FROM classrooms")
    
    res.send(data[0])
+   }
     }
+
 
     export const createClassroom = async (req,res)=>{
 try {
+   const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
 
+   if(row.lenght > 0){
    const data = await pool.query("INSERT INTO classrooms (especialidad, grado, grupo,alumnos) VALUES (?,?,?,0)"
        
        ,[req.body.especialidad,req.body.grado,req.body.grupo])
        console.log(data[0].insertId)
        res.send(data)
+   }
 } catch (error) {
    console.log(error)
    res.send(error)
@@ -25,6 +33,9 @@ try {
 
          export const updateClassroom = async (req,res)=>{
           try {
+            const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
+
+            if(row.lenght > 0){
             console.log(req.body)
     
             const data = await pool.query("UPDATE classrooms SET grado = ?, grupo = ?, especialidad = ? WHERE id = ?"
@@ -39,6 +50,7 @@ try {
                 });
                 await pool.query("SET SQL_SAFE_UPDATES = 1")
                 res.send("Todo bien")
+               }
           } catch (error) {
             res.send(error)
           }
@@ -47,9 +59,13 @@ try {
 
          export const deleteClassroom= async (req,res)=>{
            try {
+            const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
+
+            if(row.lenght > 0){
             const data = await pool.query("DELETE FROM classrooms WHERE id = ? ",[req.params.id])
             res.send(data[0])
             console.log(data[0])
+            }
            } catch (error) {
             res.send(error)
            }
@@ -58,6 +74,9 @@ try {
 
              export const getDataList= async (req,res)=>{
               try {
+               const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
+
+               if(row.lenght > 0){
                let taskStudents = []
                const students = await pool.query("SELECT * FROM students WHERE grado = ? AND grupo = ? AND especialidad = ?",[req.params.grade,req.params.group,req.params.area])
                const tasks = await pool.query("SELECT * FROM tasks WHERE grade = ? AND groupTask = ? AND area = ?",[req.params.grade,req.params.group,req.params.area])
@@ -113,6 +132,7 @@ if(contador2  === tasks[0].length+1){
                                  res.send(excelBuffer);
                          
               })
+            }
               } catch (error) {
                res.send(error)
               }
