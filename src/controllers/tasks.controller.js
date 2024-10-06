@@ -52,6 +52,7 @@ export const getTasks = async (req,res)=>{
       const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
 
       if(row.length > 0){
+        console.log(data[0])
         const data = await pool.query("SELECT * FROM tasks_students WHERE task_for = ? AND user = ?",[req.params.id,emailUser])
         res.send(data[0])  
       }

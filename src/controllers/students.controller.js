@@ -36,16 +36,21 @@ export const getStudents = async(req,res)=>{
     const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
     const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
     const [emailUser, password] = credentials.split(':');
+    console.log(password)
     try{
         const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
 
         if(row.length > 0){
         const data = await pool.query("SELECT * FROM students WHERE especialidad = ? AND grado = ? AND grupo = ? AND user = ?",[req.params.especialidad,req.params.grado,req.params.grupo,emailUser])
-        if(data[0].length === 0){
-            res.send([])
+        if(data[0].length > 0){
+            console.log(data[0])
+            res.send(data[0])
+
+
         }
         }else{
-            res.send(data[0])
+            res.send([])
+            console.log(data[0])
         }
         
     }catch(error){
