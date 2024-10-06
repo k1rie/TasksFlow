@@ -10,7 +10,7 @@ export const getClassrooms= async (req,res)=>{
    const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
 
    if(row.length > 0){
-   const data = await pool.query("SELECT * FROM classrooms")
+   const data = await pool.query("SELECT * FROM classrooms WHERE user = ?",[emailUser])
    
    res.send(data[0])
    }
@@ -22,9 +22,9 @@ try {
    const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
 
    if(row.length > 0){
-   const data = await pool.query("INSERT INTO classrooms (especialidad, grado, grupo,alumnos) VALUES (?,?,?,0)"
+   const data = await pool.query("INSERT INTO classrooms (especialidad, grado, grupo,alumnos,user) VALUES (?,?,?,0,?)"
        
-       ,[req.body.especialidad,req.body.grado,req.body.grupo])
+       ,[req.body.especialidad,req.body.grado,req.body.grupo,req.body.emailUser])
        console.log(data[0].insertId)
        res.send(data)
    }
@@ -86,11 +86,11 @@ try {
 
                if(row.length > 0){
                let taskStudents = []
-               const students = await pool.query("SELECT * FROM students WHERE grado = ? AND grupo = ? AND especialidad = ?",[req.params.grade,req.params.group,req.params.area])
-               const tasks = await pool.query("SELECT * FROM tasks WHERE grade = ? AND groupTask = ? AND area = ?",[req.params.grade,req.params.group,req.params.area])
+               const students = await pool.query("SELECT * FROM students WHERE grado = ? AND grupo = ? AND especialidad = ? AND user = ?",[req.params.grade,req.params.group,req.params.area,emailUser])
+               const tasks = await pool.query("SELECT * FROM tasks WHERE grade = ? AND groupTask = ? AND area = ? AND user = ?",[req.params.grade,req.params.group,req.params.area,emailUser])
                await Promise.all(
                students[0].map(async (e)=>{
-                 const [rows,fields] = await pool.query("SELECT * FROM tasks_students WHERE task_for = ?",[e.id])
+                 const [rows,fields] = await pool.query("SELECT * FROM tasks_students WHERE task_for = ? AND user = ?",[e.id,emailUser])
                  rows.map((e)=>{
                   taskStudents.push(e)
                  })

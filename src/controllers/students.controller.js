@@ -6,8 +6,8 @@ try {
 
     if(row.length > 0){
 
-    const data = await pool.query("INSERT INTO students (nombre,apellidos,correo,especialidad,grado,grupo) VALUES(?,?,?,?,?,?)",
-    [req.body.nombre,req.body.apellidos,req.body.correo,req.body.especialidad,req.body.grado,req.body.grupo])
+    const data = await pool.query("INSERT INTO students (nombre,apellidos,correo,especialidad,grado,grupo,user) VALUES(?,?,?,?,?,?,?)",
+    [req.body.nombre,req.body.apellidos,req.body.correo,req.body.especialidad,req.body.grado,req.body.grupo,req.body.emailUser])
     const group = await pool.query("SELECT * FROM classrooms WHERE especialidad = ? AND grado = ? AND grupo = ?",
         [req.body.especialidad,req.body.grado,req.body.grupo]
     )
@@ -15,7 +15,7 @@ try {
 
     if(rows.length > 0){
 rows.map((e)=>{
-    pool.query("INSERT INTO tasks_students (name,rate,final_rate,task_for) VALUES (?,?,0,?)",[e.name,e.rate,data[0].insertId])
+    pool.query("INSERT INTO tasks_students (name,rate,final_rate,task_for,user) VALUES (?,?,0,?,?)",[e.name,e.rate,data[0].insertId,req.body.emailUser])
 
 })
     }
@@ -40,7 +40,7 @@ export const getStudents = async(req,res)=>{
         const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
 
         if(row.length > 0){
-        const data = await pool.query("SELECT * FROM students WHERE especialidad = ? AND grado = ? AND grupo = ?",[req.params.especialidad,req.params.grado,req.params.grupo])
+        const data = await pool.query("SELECT * FROM students WHERE especialidad = ? AND grado = ? AND grupo = ? AND user = ?",[req.params.especialidad,req.params.grado,req.params.grupo,emailUser])
         if(data[0].length === 0){
             res.send([])
         }
@@ -65,7 +65,7 @@ export const getStudent = async(req,res)=>{
         const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
 
         if(row.length > 0){
-        const data = await pool.query("SELECT * FROM students WHERE id = ?",[req.params.id])
+        const data = await pool.query("SELECT * FROM students WHERE id = ? AND user = ?",[req.params.id,emailUser])
         res.send(data[0])
         }
     }catch(error){
