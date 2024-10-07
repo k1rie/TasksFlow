@@ -141,15 +141,16 @@ export const getTasksGroup = async (req,res)=>{
          
                })
               
+               await req.body.alumnosTask.forEach(async(element) => {
+const tasks = await pool.query("SELECT * FROM tasks_students WHERE task_for = ? AND name = ?",[element.id,req.body.nameTask])
 
-               const studentsTasks = await pool.query("SELECT * FROM tasks_students WHERE name = ? AND user = ? AND grade = ? AND group = ? AND area = ?",[req.body.nameTask,req.body.emailUser,req.body.grade,req.body.group,req.body.area])
-               console.log("aquuiiii")
-               console.log(studentsTasks)
-               studentsTasks[0].map(async (e)=>{
-                const percentage = ((Number(e.final_rate)*100)/Number(req.body.rate))/100
-                 await pool.query("UPDATE tasks_students SET final_rate = ? WHERE task_for = ? AND name = ? ",[percentage*Number(req.body.newRate),e.id,e.nameTask])
-         
+tasks[0].forEach(async (e)=>{
+  const percentage = ((Number(e.final_rate)*100)/Number(req.body.rate))/100
+  await pool.query("UPDATE tasks_students SET final_rate = ? WHERE task_for = ? AND name = ? ",[percentage*Number(req.body.newRate),e.task_for,e.name])
+})
                })
+               
+             
        
                res.send(data)
             }
