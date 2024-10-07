@@ -92,6 +92,8 @@ export const getTasksGroup = async (req,res)=>{
 
     if(row.length > 0){
       const data = await pool.query("UPDATE tasks_students SET final_rate = ? WHERE task_for = ? AND name = ?",[req.body.newRate,req.body.idStudent,req.body.taskName])
+    
+
       res.send(data)
     }
   } catch (error) {
@@ -135,6 +137,14 @@ export const getTasksGroup = async (req,res)=>{
                await pool.query("SET SQL_SAFE_UPDATES = 0")
        
                await pool.query("UPDATE tasks_students SET rate = ? WHERE  task_for = ? AND name = ?",[req.body.newRate,element.id,req.body.nameTask])
+         
+               })
+
+               const studentsTasks = await pool.query("SELECT * FROM tasks_students WHERE name = ? AND user = ?",[req.body.taskName,req.body.emailUser])
+
+               studentsTasks[0].map(async (e)=>{
+                const percentage = (e.final_rate*100)/req.body.rate
+                 await pool.query("UPDATE tasks_students SET final_rate = ? WHERE task_for = ? AND name = ?",[percentage*req.body.newRate,e.id,e.taskName])
          
                })
        
