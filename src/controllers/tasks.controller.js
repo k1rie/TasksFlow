@@ -142,7 +142,7 @@ export const getTasksGroup = async (req,res)=>{
                })
               
 
-               const studentsTasks = await pool.query("SELECT * FROM tasks_students WHERE name = ? AND user = ? AND grade = ? AND group = ? AND area = ? AND user = ?",[req.body.nameTask,req.body.emailUserreq.body.grade,req.body.group,req.body.area,req.body.emailUser])
+               const studentsTasks = await pool.query("SELECT * FROM tasks_students WHERE name = ? AND user = ? AND grade = ? AND group = ? AND area = ?",[req.body.nameTask,req.body.emailUserreq.body.grade,req.body.group,req.body.area])
                console.log("aquuiiii")
                console.log(studentsTasks)
                studentsTasks[0].map(async (e)=>{
