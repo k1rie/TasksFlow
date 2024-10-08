@@ -33,7 +33,7 @@ rows.map((e)=>{
         width: 150,        // Define el tamaño del SVG
         margin: 1          // Define el margen del SVG
       });
-       console.log( QRDataUri)
+       console.log( QRDataSvg)
       
    
 
