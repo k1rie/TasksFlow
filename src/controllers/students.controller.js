@@ -1,8 +1,6 @@
 import {pool} from "../db.js"
 import nodeMailer from "nodemailer"
 import QRCode from "qrcode"
-import path from "path"
-import fs from "fs"
 
 export const createStudent = async(req,res)=>{
 try {
@@ -29,8 +27,8 @@ rows.map((e)=>{
     )
 
      
-    const QRFilePath = path.join(__dirname, 'qrcode.png');
-    await QRCode.toFile(QRFilePath, `https://tasksflow-backend.onrender.com/attendence/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.area}/${req.body.correo}`);       
+    const QRDataUri = await QRCode.toDataURL(`https://tasksflow-backend.onrender.com/attendence/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.area}/${req.body.correo}`);
+       
        
       
    
@@ -49,17 +47,10 @@ rows.map((e)=>{
 
           // Enviar correo
           let message = await transporter.sendMail({
-            from: '"Remitente" <d628587@gmail.com>', // Remitente
-            to: req.body.correo,                            // Lista de destinatarios
+            from: '"Remitente" <d628587@gmail.com>',
+            to: req.body.correo,
             subject: "QR",
-            text: "Aqui está tu QR"      ,
-            attachments: [
-                {
-                  filename: 'qrcode.png',
-                  path: QRFilePath,
-                  cid: 'qrcode@cid'
-                }
-              ]                                    // Cuerpo del correo en HTML
+            html: `<p>Aquí está tu código QR:</p><img src="${QRDataUri}" alt="Código QR no disponible" />`
           });
                   
 
