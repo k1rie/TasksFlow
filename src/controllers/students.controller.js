@@ -1,6 +1,8 @@
 import {pool} from "../db.js"
 import nodeMailer from "nodemailer"
 import QRCode from "qrcode"
+import path from "path"
+import fs from "fs"
 
 export const createStudent = async(req,res)=>{
 try {
