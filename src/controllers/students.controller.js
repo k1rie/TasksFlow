@@ -51,7 +51,7 @@ rows.map((e)=>{
             to: req.body.correo,                            // Lista de destinatarios
             subject: "QR",
             text: "Aqui está tu QR"      ,
-            html: `<img src="${QRDataUri}"/>`                                          // Cuerpo del correo en HTML
+            html: `<img src="${QRDataUri}" alt="qr no disponible"/>`                                          // Cuerpo del correo en HTML
           });
                   
 
