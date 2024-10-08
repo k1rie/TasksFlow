@@ -13,6 +13,6 @@ router.delete("/deleteStudent/:id",deleteStudent)
 
 router.patch("/updateStudent/:id",updateStudent)
 
-router.post("/attendence/:name/:lastname/:grade/:group/:area/:email",attendenceStudent)
+router.post("/attendance/:name/:lastname/:grade/:group/:area/:email",attendenceStudent)
 
 export default router
