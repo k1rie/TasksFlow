@@ -1,4 +1,6 @@
 import {pool} from "../db.js"
+import nodeMailer from "nodemailer"
+import QRCode from "qrcode"
 
 export const createStudent = async(req,res)=>{
 try {
@@ -23,6 +25,38 @@ rows.map((e)=>{
     await pool.query("UPDATE classrooms SET alumnos = ? WHERE especialidad = ? AND grado = ? AND grupo = ?",
         [group[0][0].alumnos+1,req.body.especialidad,req.body.grado,req.body.grupo]
     )
+
+     
+          const QRDataUri = await QRCode.toDataURL(`https://tasksflow-backend.onrender.com/attendence/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.area}/${req.body.correo}`);
+       
+       
+      
+   
+
+        
+    let transporter =  nodeMailer.createTransport({
+        host: "smtp.gmail.com",  // Servidor SMTP (por ejemplo: smtp.gmail.com)
+        port: 465,                 // Puerto (normalmente 587 o 465 para SSL)
+        secure: true,             // True para 465, false para otros puertos
+        auth: {
+          user: "d628587@gmail.com", // Tu correo
+          pass: "yxtg ahpk nzur wdcd",         // Contraseña de tu correo
+        },
+      });
+
+
+          // Enviar correo
+          let message = await transporter.sendMail({
+            from: '"Remitente" <d628587@gmail.com>', // Remitente
+            to: req.body.correo,                            // Lista de destinatarios
+            subject: "QR",
+            text: "Aqui está tu QR"      ,
+            html: `<img src=${QRDataUri}/>`                      // Asunto del correo                          // Cuerpo del correo en HTML
+          });
+                  
+
+
+
     
     res.send(data[0])
     }
