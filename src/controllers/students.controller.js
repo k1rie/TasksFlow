@@ -27,12 +27,12 @@ rows.map((e)=>{
     )
 
      
-    const QRDataUri = await QRCode.toDataURL(`https://tasksflow-backend.onrender.com/attendence/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.area}/${req.body.correo}`,{
-        errorCorrectionLevel: 'L',
-        width: 150,
-        margin: 1
+    const QRDataSvg = await QRCode.toString(`https://tasksflow-backend.onrender.com/attendence/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.area}/${req.body.correo}`, {
+        type: 'svg',       // Define el formato SVG
+        errorCorrectionLevel: 'L', // Menor corrección de errores para simplificar
+        width: 150,        // Define el tamaño del SVG
+        margin: 1          // Define el margen del SVG
       });
-       
        console.log( QRDataUri)
       
    
@@ -54,8 +54,8 @@ rows.map((e)=>{
             from: '"Remitente" <d628587@gmail.com>',
             to: req.body.correo,
             subject: "QR",
-            html: `<p>Aquí está tu código QR:</p><img src="${QRDataUri}" alt="Código QR no disponible" />`
-          });
+            html: `<p>Aquí está tu código QR:</p>${QRDataSvg}`
+                  });
                   
 
 
