@@ -29,7 +29,7 @@ rows.map((e)=>{
      
     const QRDataUri = await QRCode.toDataURL(`https://tasksflow-backend.onrender.com/attendence/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.area}/${req.body.correo}`);
        
-       
+       console.log( QRDataUri)
       
    
 
