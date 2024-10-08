@@ -26,15 +26,11 @@ rows.map((e)=>{
         [group[0][0].alumnos+1,req.body.especialidad,req.body.grado,req.body.grupo]
     )
 
-     
-    const QRDataSvg = await QRCode.toString(`https://tasksflow-backend.onrender.com/attendence/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.area}/${req.body.correo}`, {
-        type: 'svg',       // Define el formato SVG
-        errorCorrectionLevel: 'L', // Menor corrección de errores para simplificar
-        width: 150,        // Define el tamaño del SVG
-        margin: 1          // Define el margen del SVG
+    const QRBuffer = await QRCode.toBuffer(`https://tasksflow-backend.onrender.com/attendence/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.area}/${req.body.correo}`, {
+        errorCorrectionLevel: 'L', // Nivel de corrección de errores
       });
-       console.log( QRDataSvg)
-      
+
+      console.log(QRBuffer)
    
 
         
@@ -53,8 +49,15 @@ rows.map((e)=>{
           let message = await transporter.sendMail({
             from: '"Remitente" <d628587@gmail.com>',
             to: req.body.correo,
-            subject: "QR",
-            html: `<p>Aquí está tu código QR:</p>${QRDataSvg}`
+            subject: "QR en Formato PNG",
+            text: "Aquí está tu código QR en formato PNG.",
+            attachments: [
+              {
+                filename: 'qrcode.png', // Nombre del archivo adjunto
+                content: QRBuffer,      // Contenido del archivo como buffer
+                contentType: 'image/png'
+              }
+            ]
                   });
                   
 
