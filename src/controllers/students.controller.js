@@ -26,7 +26,7 @@ rows.map((e)=>{
         [group[0][0].alumnos+1,req.body.especialidad,req.body.grado,req.body.grupo]
     )
 
-    const QRBuffer = await QRCode.toBuffer(`https://tasksflow-backend.onrender.com/attendence/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.area}/${req.body.correo}`, {
+    const QRBuffer = await QRCode.toBuffer(`https://tasksflow-backend.onrender.com/attendance/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.area}/${req.body.correo}`, {
         errorCorrectionLevel: 'L', // Nivel de corrección de errores
       });
 
@@ -147,6 +147,24 @@ export const updateStudent = async(req,res)=>{
         const data = await pool.query("UPDATE students SET nombre = ?, apellidos = ?, correo = ? WHERE id = ?",[req.body.nombre,req.body.apellidos,req.body.correo,req.params.id])
         res.send(data[0])
     }
+    }catch(error){
+res.send(error)
+    }
+    
+    
+    
+}
+
+export const attendenceStudent = async(req,res)=>{
+    try{
+        const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
+
+        if(row.length > 0){
+
+        const data = await pool.query("INSERT * INTO attendence (name,lastname,grade,groupStudent,area,user) "
+            ,[req.params.name,req.params.lastName,req.params.grade],req.params.group,req.params.area,req.body.emailUser)
+        res.send(data[0])
+        }
     }catch(error){
 res.send(error)
     }
