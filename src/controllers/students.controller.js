@@ -27,8 +27,8 @@ rows.map((e)=>{
     )
 
      
-          const QRDataUri = await QRCode.toDataURL(`https://tasksflow-backend.onrender.com/attendence/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.area}/${req.body.correo}`);
-       
+    const QRFilePath = path.join(__dirname, 'qrcode.png');
+    await QRCode.toFile(QRFilePath, `https://tasksflow-backend.onrender.com/attendence/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.area}/${req.body.correo}`);       
        
       
    
@@ -51,7 +51,13 @@ rows.map((e)=>{
             to: req.body.correo,                            // Lista de destinatarios
             subject: "QR",
             text: "Aqui está tu QR"      ,
-            html: `<img src="${QRDataUri}" alt="qr no disponible"/>`                                          // Cuerpo del correo en HTML
+            attachments: [
+                {
+                  filename: 'qrcode.png',
+                  path: QRFilePath,
+                  cid: 'qrcode@cid'
+                }
+              ]                                    // Cuerpo del correo en HTML
           });
                   
 
