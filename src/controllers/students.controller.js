@@ -26,7 +26,7 @@ rows.map((e)=>{
         [group[0][0].alumnos+1,req.body.especialidad,req.body.grado,req.body.grupo]
     )
 
-    const QRBuffer = await QRCode.toBuffer(`https://tasksflow-backend.onrender.com/attendance/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.area}/${req.body.correo}`, {
+    const QRBuffer = await QRCode.toBuffer(`https://tasksflow-backend.onrender.com/attendance/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.especialidad}/${req.body.correo}`, {
         errorCorrectionLevel: 'L', // Nivel de corrección de errores
       });
 
