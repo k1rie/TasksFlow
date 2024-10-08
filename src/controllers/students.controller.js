@@ -162,7 +162,7 @@ export const attendenceStudent = async(req,res)=>{
         if(row.length > 0){
 
         const data = await pool.query("INSERT * INTO attendence (name,lastname,grade,groupStudent,area,user) "
-            ,[req.params.name,req.params.lastName,req.params.grade],req.params.group,req.params.area,req.body.emailUser)
+            ,[req.params.name,req.params.lastName,req.params.grade,req.params.group,req.params.area,req.body.emailUser])
         res.send(data[0])
         }
     }catch(error){
