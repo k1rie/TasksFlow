@@ -211,4 +211,57 @@ console.log(error)
     
 }
 
+export const createPermission = async(req,res)=>{
+    
+    try{
+        const authHeader = req.headers['authorization'];
+        const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
+        const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+        const [emailUser, password] = credentials.split(':');
+        const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
+        console.log("ddd")
 
+        if(row.length > 0){
+const [rows,info] = await pool.query("INSERT INTO permissions (name,lastname,grade,groupStudent,area,user,permission,reason,created_at) VALUES(?,?,?,?,?,?,?,?,?)",
+    [req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.reason,req.body.date]
+)
+console.log(rows)
+res.send({response:true})
+        }
+    }catch(err){
+res.send(err)
+console.log(err)
+    }
+    }
+
+    export const getPermissions = async(req,res)=>{
+    
+        try{
+            const authHeader = req.headers['authorization'];
+            const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
+            const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+            const [emailUser, password] = credentials.split(':');
+            const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
+            console.log("ddd")
+    
+            if(row.length > 0){
+                console.log("ddd")
+    
+            const [rows,info] = await pool.query("SELECT * FROM permissions WHERE name = ? AND lastname = ? AND grade = ? AND groupStudent = ? AND area = ? AND user = ?"
+                ,[req.params.name,req.params.lastName,req.params.grade,req.params.group,req.params.area,emailUser])
+            res.send(rows)
+            console.log(rows)
+    
+            }
+            console.log("aa")
+        }catch(error){
+    res.send(error)
+    console.log(error)
+        }
+        
+        
+        
+    }
+
+
+    getPermissions
