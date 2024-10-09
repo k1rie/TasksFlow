@@ -15,6 +15,6 @@ router.patch("/updateStudent/:id",updateStudent)
 
 router.post("/attendance/:name/:lastName/:grade/:group/:area/:email",attendenceStudent)
 
-router.get("/getStudentAttendance/:name/:lastName/:grade/:group/:area/:user",getAttendenceStudent)
+router.get("/getStudentAttendance/:name/:lastName/:grade/:group/:area",getAttendenceStudent)
 
 export default router
