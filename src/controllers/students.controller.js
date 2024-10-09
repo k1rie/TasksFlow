@@ -1,3 +1,4 @@
+
 import {pool} from "../db.js"
 import nodeMailer from "nodemailer"
 import QRCode from "qrcode"
@@ -169,7 +170,7 @@ export const attendenceStudent = async(req,res)=>{
 
         const data = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance) VALUES(?,?,?,?,?,?,?) "
             ,[req.params.name,req.params.lastName,req.params.grade,req.params.group,req.params.area,emailUser,1])
-        res.send(data[0])
+        res.send({response:true})
         }
         console.log("aaa")
     }catch(error){
@@ -233,6 +234,30 @@ res.send(err)
 console.log(err)
     }
     }
+
+    export const createAttendance = async(req,res)=>{
+    
+        try{
+            const authHeader = req.headers['authorization'];
+            const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
+            const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+            const [emailUser, password] = credentials.split(':');
+            const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
+            console.log("ddd")
+    
+            if(row.length > 0){
+    const [rows,info] = await pool.query("INSERT INTO attendance (name,lastname,grade,groupStudent,area,user,attendance,created_at) VALUES(?,?,?,?,?,?,?,?,)",
+        [req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.date]
+    )
+    console.log(rows)
+    res.send({response:true})
+            }
+        }catch(err){
+    res.send(err)
+    console.log(err)
+        }
+        }
+    
 
     export const getPermissions = async(req,res)=>{
     

@@ -1,5 +1,5 @@
 import {Router} from "express"
-import {createStudent,getStudents,getStudent, deleteStudent, updateStudent, attendenceStudent, getAttendenceStudent, createPermission, getPermissions} from "../controllers/students.controller.js"
+import {createStudent,getStudents,getStudent, deleteStudent, updateStudent, attendenceStudent, getAttendenceStudent, createPermission, getPermissions, createAttendance} from "../controllers/students.controller.js"
 
 const router = Router()
 
@@ -16,6 +16,9 @@ router.patch("/updateStudent/:id",updateStudent)
 router.post("/attendance/:name/:lastName/:grade/:group/:area/:email",attendenceStudent)
 
 router.post("/createPermission",createPermission)
+
+router.post("/createAttendance",createAttendance)
+
 
 router.get("/getPermissions/:name/:lastName/:grade/:group/:area",getPermissions)
 
