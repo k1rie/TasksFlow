@@ -155,8 +155,8 @@ if(contador2  === tasks[0].length+1){
                                       let info = await transporter.sendMail({
                                         from: '"Remitente" <d628587@gmail.com>', // Remitente
                                         to: emailUser,                            // Lista de destinatarios
-                                        subject: "Data Excel",
-                                        text: "Aqui estan sus calificaciones"      ,
+                                        subject: "Calificaciones Excel",
+                                        text: `Aqui estan sus calificaciones de ${req.params.grade} ${req.params.group} ${req.params.area}`      ,
                                         attachments: [
                                           {   // Adjuntar el archivo Excel en memoria
                                             filename: 'usuarios.xlsx',

@@ -1,5 +1,5 @@
 import {Router} from "express"
-import {createStudent,getStudents,getStudent, deleteStudent, updateStudent, attendenceStudent} from "../controllers/students.controller.js"
+import {createStudent,getStudents,getStudent, deleteStudent, updateStudent, attendenceStudent, getAttendenceStudent} from "../controllers/students.controller.js"
 
 const router = Router()
 
@@ -13,6 +13,8 @@ router.delete("/deleteStudent/:id",deleteStudent)
 
 router.patch("/updateStudent/:id",updateStudent)
 
-router.post("/attendance/:name/:lastname/:grade/:group/:area/:email",attendenceStudent)
+router.post("/attendance/:name/:lastName/:grade/:group/:area/:email",attendenceStudent)
+
+router.get("/getStudentAttendance/:name/:lastName/:grade/:group/:area/:user",getAttendenceStudent)
 
 export default router

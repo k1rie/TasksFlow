@@ -49,8 +49,8 @@ rows.map((e)=>{
           let message = await transporter.sendMail({
             from: '"Remitente" <d628587@gmail.com>',
             to: req.body.correo,
-            subject: "QR en Formato PNG",
-            text: "Aquí está tu código QR en formato PNG.",
+            subject: "QR",
+            text: `Aquí está tu código QR en formato PNG para la clase ${req.body.grado} ${req.body.grupo} ${req.body.especialidad}`,
             attachments: [
               {
                 filename: 'qrcode.png', // Nombre del archivo adjunto
@@ -156,19 +156,56 @@ res.send(error)
 }
 
 export const attendenceStudent = async(req,res)=>{
+    
     try{
-        const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
+        const authHeader = req.headers['authorization'];
+        const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
+        const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+        const [emailUser, password] = credentials.split(':');
+        const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
 
         if(row.length > 0){
+            console.log("ddd")
 
-        const data = await pool.query("INSERT * INTO attendence (name,lastname,grade,groupStudent,area,user,attendance,ispermission) "
-            ,[req.params.name,req.params.lastName,req.params.grade,req.params.group,req.params.area,req.body.emailUser,req.body.attendance,0])
+        const data = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance) VALUES(?,?,?,?,?,?,?) "
+            ,[req.params.name,req.params.lastName,req.params.grade,req.params.group,req.params.area,emailUser,1])
         res.send(data[0])
         }
+        console.log("aaa")
     }catch(error){
 res.send(error)
+console.log(error)
     }
     
     
     
 }
+
+
+export const getAttendenceStudent = async(req,res)=>{
+    
+    try{
+        const authHeader = req.headers['authorization'];
+        const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
+        const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+        const [emailUser, password] = credentials.split(':');
+        const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
+
+        if(row.length > 0){
+            console.log("ddd")
+
+        const data = await pool.query("SELECT fechas.dia AS fecha, COALESCE(att.attendance, 0) AS asistencia, att.name, att.lastname, att.grade, att.groupStudent, att.area, att.user FROM (SELECT DISTINCT DATE(created_at) AS dia FROM attendence WHERE name = ? AND lastname = ? AND grade = ? AND group = ? AND area = ? AND user = ? ORDER BY dia DESC LIMIT 30 ) AS ultimas_fechas RIGHT JOIN ( SELECT CURDATE() - INTERVAL a.a DAY AS dia FROM (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS a CROSS JOIN (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS b ORDER BY dia DESC LIMIT 30 ) AS fechas ON ultimas_fechas.dia = fechas.dia LEFT JOIN attendence att ON DATE(att.created_at) = fechas.dia ORDER BY fechas.dia DESC; "
+            ,[req.params.name,req.params.lastName,req.params.grade,req.params.group,req.params.area,emailUser])
+        res.send(data[0])
+        }
+        console.log("aaa")
+    }catch(error){
+res.send(error)
+console.log(error)
+    }
+    
+    
+    
+}
+
+
