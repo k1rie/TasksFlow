@@ -5,7 +5,7 @@ export const createTask = async (req,res)=>{
 const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
 
 if(row.length > 0){
-  await pool.query("INSERT INTO tasks (name,rate,grade,groupTask,area,user) VALUES (?,?,?,?,?,?)",[req.body.nombre,req.body.rate,req.body.grade,req.body.group,req.body.area,req.body.emailUser])
+  await pool.query("INSERT INTO tasks (name,rate,grade,groupTask,area,user,groupid) VALUES (?,?,?,?,?,?)",[req.body.nombre,req.body.rate,req.body.grade,req.body.group,req.body.area,req.body.emailUser,req.body.groupId])
 
   await req.body.alumnosTask.forEach(async(element) => {
 await pool.query("INSERT INTO tasks_students (name,rate,final_rate,task_for,user) VALUES (?,?,?,?,?)",[req.body.nombre,req.body.rate,req.body.finalRate,element.id,req.body.emailUser])
@@ -75,7 +75,7 @@ export const getTasksGroup = async (req,res)=>{
     const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
 
     if(row.length > 0){
-      const data = await pool.query("SELECT * FROM tasks WHERE grade = ? AND groupTask = ? AND area = ? AND user = ?",[req.params.grade,req.params.group,req.params.area,emailUser])
+      const data = await pool.query("SELECT * FROM tasks WHERE groupid = ? AND user = ?",[req.params.groupId,emailUser])
       res.send(data[0])
     }
    } catch (error) {
@@ -142,11 +142,11 @@ export const getTasksGroup = async (req,res)=>{
                })
               
                await req.body.alumnosTask.forEach(async(element) => {
-const tasks = await pool.query("SELECT * FROM tasks_students WHERE task_for = ? AND name = ?",[element.id,req.body.nameTask])
+const tasks = await pool.query("SELECT * FROM tasks_students WHERE task_for = ? AND name = ? AND user = ?",[element.id,req.body.nameTask,req.body.emailUser])
 
 tasks[0].forEach(async (e)=>{
   const percentage = ((Number(e.final_rate)*100)/Number(req.body.rate))/100
-  await pool.query("UPDATE tasks_students SET final_rate = ? WHERE task_for = ? AND name = ? ",[percentage*Number(req.body.newRate),e.task_for,e.name])
+  await pool.query("UPDATE tasks_students SET final_rate = ? WHERE task_for = ? AND name = ? AND user = ?",[percentage*Number(req.body.newRate),e.task_for,e.name,req.body.emailUser])
 })
                })
                

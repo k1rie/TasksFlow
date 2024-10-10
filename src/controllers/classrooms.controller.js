@@ -68,7 +68,9 @@ try {
             const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
 
             if(row.length > 0){
+              await pool.query("SET FOREIGN_KEY_CHECKS = 0")
             const data = await pool.query("DELETE FROM classrooms WHERE id = ? ",[req.params.id])
+            await pool.query("SET FOREIGN_KEY_CHECKS = 1")
             res.send(data[0])
             console.log(data[0])
             }

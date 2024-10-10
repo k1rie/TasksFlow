@@ -15,7 +15,7 @@ router.patch("/changeNameTask",changeNameTask)
 router.patch("/changeRateTaskGroup",changeRateTaskGroup)
 
 
-router.get("/getTasksGroup/:grade/:group/:area",getTasksGroup)
+router.get("/getTasksGroup/:groupId",getTasksGroup)
 
 router.delete("/deleteTask",deleteTask)
 
