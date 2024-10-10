@@ -246,7 +246,7 @@ console.log(err)
             console.log("ddd")
     
             if(row.length > 0){
-    const [rows,info] = await pool.query("INSERT INTO attendance (name,lastname,grade,groupStudent,area,user,attendance,created_at) VALUES(?,?,?,?,?,?,?,?)",
+    const [rows,info] = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance,created_at) VALUES(?,?,?,?,?,?,?,?)",
         [req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.date]
     )
     console.log(rows)
