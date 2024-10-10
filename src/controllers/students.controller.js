@@ -9,8 +9,8 @@ try {
 
     if(row.length > 0){
 
-    const data = await pool.query("INSERT INTO students (nombre,apellidos,correo,especialidad,grado,grupo,user) VALUES(?,?,?,?,?,?,?)",
-    [req.body.nombre,req.body.apellidos,req.body.correo,req.body.especialidad,req.body.grado,req.body.grupo,req.body.emailUser])
+    const data = await pool.query("INSERT INTO students (nombre,apellidos,correo,especialidad,grado,grupo,user,groupid) VALUES(?,?,?,?,?,?,?,?)",
+    [req.body.nombre,req.body.apellidos,req.body.correo,req.body.especialidad,req.body.grado,req.body.grupo,req.body.emailUser,req.body.groupId])
     const group = await pool.query("SELECT * FROM classrooms WHERE especialidad = ? AND grado = ? AND grupo = ? AND user = ?",
         [req.body.especialidad,req.body.grado,req.body.grupo,req.body.emailUser]
     )
@@ -82,7 +82,7 @@ export const getStudents = async(req,res)=>{
         const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
 
         if(row.length > 0){
-        const data = await pool.query("SELECT * FROM students WHERE especialidad = ? AND grado = ? AND grupo = ? AND user = ?",[req.params.especialidad,req.params.grado,req.params.grupo,emailUser])
+        const data = await pool.query("SELECT * FROM students WHERE groupId = ?",[req.params.groupId])
         if(data[0].length > 0){
             console.log(data[0])
             res.send(data[0])

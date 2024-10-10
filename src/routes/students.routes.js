@@ -5,7 +5,7 @@ const router = Router()
 
 router.post("/createStudent",createStudent)
 
-router.get("/getStudents/:especialidad/:grado/:grupo",getStudents)
+router.get("/getStudents/:groupId",getStudents)
 
 router.get("/getStudent/:id",getStudent)
 
