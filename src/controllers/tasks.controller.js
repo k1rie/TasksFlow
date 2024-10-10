@@ -5,7 +5,7 @@ export const createTask = async (req,res)=>{
 const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
 
 if(row.length > 0){
-  await pool.query("INSERT INTO tasks (name,rate,grade,groupTask,area,user,groupid) VALUES (?,?,?,?,?,?)",[req.body.nombre,req.body.rate,req.body.grade,req.body.group,req.body.area,req.body.emailUser,req.body.groupId])
+  await pool.query("INSERT INTO tasks (name,rate,grade,groupTask,area,user,groupid) VALUES (?,?,?,?,?,?,?)",[req.body.nombre,req.body.rate,req.body.grade,req.body.group,req.body.area,req.body.emailUser,req.body.groupId])
 
   await req.body.alumnosTask.forEach(async(element) => {
 await pool.query("INSERT INTO tasks_students (name,rate,final_rate,task_for,user) VALUES (?,?,?,?,?)",[req.body.nombre,req.body.rate,req.body.finalRate,element.id,req.body.emailUser])
