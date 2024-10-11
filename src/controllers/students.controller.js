@@ -27,7 +27,7 @@ rows.map((e)=>{
         [group[0][0].alumnos+1,req.body.especialidad,req.body.grado,req.body.grupo]
     )
 
-    const QRBuffer = await QRCode.toBuffer(`https://tasks-flow-b44f6.web.app/attendance/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.especialidad}/${req.body.correo}`, {
+    const QRBuffer = await QRCode.toBuffer(`https://tasks-flow-b44f6.web.app/attendance/${data[0].insertId}/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.especialidad}/${req.body.correo}`, {
         errorCorrectionLevel: 'L', // Nivel de corrección de errores
       });
 
@@ -168,8 +168,8 @@ export const attendenceStudent = async(req,res)=>{
         if(row.length > 0){
             console.log("ddd")
 
-        const data = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance) VALUES(?,?,?,?,?,?,?) "
-            ,[req.params.name,req.params.lastName,req.params.grade,req.params.group,req.params.area,emailUser,1])
+        const data = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance,studentid) VALUES(?,?,?,?,?,?,?,?) "
+            ,[req.params.body,req.params.body,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.id])
         res.send({response:true})
         }
         console.log("aaa")
@@ -196,8 +196,8 @@ export const getAttendenceStudent = async(req,res)=>{
         if(row.length > 0){
             console.log("ddd")
 
-        const [rows,info] = await pool.query("SELECT fechas.dia AS created_at, COALESCE(att.attendance, 0) AS attendance, att.name, att.lastname, att.grade, att.groupStudent, att.area, att.user FROM ( SELECT DISTINCT DATE(created_at) AS dia FROM attendence WHERE name = ? AND lastname = ? AND grade = ? AND groupStudent = ? AND area = ? AND user = ? ORDER BY dia DESC LIMIT 30 ) AS ultimas_fechas RIGHT JOIN ( SELECT DISTINCT CURDATE() - INTERVAL a.a DAY AS dia FROM (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS a CROSS JOIN (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS b ORDER BY dia DESC LIMIT 30 ) AS fechas ON ultimas_fechas.dia = fechas.dia LEFT JOIN attendence att ON DATE(att.created_at) = fechas.dia AND att.name = ? AND att.lastname = ? AND att.grade = ? AND att.groupStudent = ? AND att.area = ? AND att.user = ? ORDER BY fechas.dia DESC; "
-            ,[req.params.name,req.params.lastName,req.params.grade,req.params.group,req.params.area,emailUser,req.params.name,req.params.lastName,req.params.grade,req.params.group,req.params.area,emailUser])
+        const [rows,info] = await pool.query("SELECT fechas.dia AS created_at, COALESCE(att.attendance, 0) AS attendance, att.name, att.lastname, att.grade, att.groupStudent, att.area, att.user FROM ( SELECT DISTINCT DATE(created_at) AS dia FROM attendence WHERE studentid = ? AND user = ? ORDER BY dia DESC LIMIT 30 ) AS ultimas_fechas RIGHT JOIN ( SELECT DISTINCT CURDATE() - INTERVAL a.a DAY AS dia FROM (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS a CROSS JOIN (SELECT 0 AS a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS b ORDER BY dia DESC LIMIT 30 ) AS fechas ON ultimas_fechas.dia = fechas.dia LEFT JOIN attendence att ON DATE(att.created_at) = fechas.dia AND att.name = ? AND att.lastname = ? AND att.grade = ? AND att.groupStudent = ? AND att.area = ? AND att.user = ? ORDER BY fechas.dia DESC; "
+            ,[req.params.id,emailUser,req.params.name,req.params.lastName,req.params.grade,req.params.group,req.params.area,emailUser])
         res.send(rows)
         console.log(rows)
 
@@ -223,8 +223,8 @@ export const createPermission = async(req,res)=>{
         console.log("ddd")
 
         if(row.length > 0){
-const [rows,info] = await pool.query("INSERT INTO permissions (name,lastname,grade,groupStudent,area,user,permission,reason,created_at) VALUES(?,?,?,?,?,?,?,?,?)",
-    [req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.reason,req.body.date]
+const [rows,info] = await pool.query("INSERT INTO permissions (name,lastname,grade,groupStudent,area,user,permission,reason,created_at,studentid) VALUES(?,?,?,?,?,?,?,?,?,?)",
+    [req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.reason,req.body.date,req.body.id]
 )
 console.log(rows)
 res.send({response:true})
@@ -246,8 +246,8 @@ console.log(err)
             console.log("ddd")
     
             if(row.length > 0){
-    const [rows,info] = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance,created_at) VALUES(?,?,?,?,?,?,?,?)",
-        [req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.date]
+    const [rows,info] = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance,created_at,studentid) VALUES(?,?,?,?,?,?,?,?,?)",
+        [req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.date,req.body.id]
     )
     console.log(rows)
     res.send({response:true})
@@ -272,8 +272,8 @@ console.log(err)
             if(row.length > 0){
                 console.log("ddd")
     
-            const [rows,info] = await pool.query("SELECT * FROM permissions WHERE name = ? AND lastname = ? AND grade = ? AND groupStudent = ? AND area = ? AND user = ?"
-                ,[req.params.name,req.params.lastName,req.params.grade,req.params.group,req.params.area,emailUser])
+            const [rows,info] = await pool.query("SELECT * FROM permissions WHERE studentid = ? AND user = ?"
+                ,[req.params.id,emailUser])
             res.send(rows)
             console.log(rows)
     

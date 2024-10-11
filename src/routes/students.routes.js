@@ -20,8 +20,8 @@ router.post("/createPermission",createPermission)
 router.post("/createAttendance",createAttendance)
 
 
-router.get("/getPermissions/:name/:lastName/:grade/:group/:area",getPermissions)
+router.get("/getPermissions/:id",getPermissions)
 
-router.get("/getStudentAttendance/:name/:lastName/:grade/:group/:area",getAttendenceStudent)
+router.get("/getStudentAttendance/:id,getAttendenceStudent)
 
 export default router
