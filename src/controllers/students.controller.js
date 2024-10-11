@@ -9,7 +9,7 @@ try {
 
     if(row.length > 0){
 
-    const data = await pool.query("INSERT INTO students (nombre,apellidos,correo,especialidad,grado,grupo,user,groupid) VALUES(?,?,?,?,?,?,?,?)",
+    const data= await pool.query("INSERT INTO students (nombre,apellidos,correo,especialidad,grado,grupo,user,groupid) VALUES(?,?,?,?,?,?,?,?)",
     [req.body.nombre,req.body.apellidos,req.body.correo,req.body.especialidad,req.body.grado,req.body.grupo,req.body.emailUser,req.body.groupId])
     const group = await pool.query("SELECT * FROM classrooms WHERE especialidad = ? AND grado = ? AND grupo = ? AND user = ?",
         [req.body.especialidad,req.body.grado,req.body.grupo,req.body.emailUser]
@@ -41,7 +41,7 @@ rows.map((e)=>{
         secure: true,             // True para 465, false para otros puertos
         auth: {
           user: "d628587@gmail.com", // Tu correo
-          pass: "yxtg ahpk nzur wdcd",         // Contraseña de tu correo
+          pass: "loxq lngu ijxd trxg",         // Contraseña de tu correo
         },
       });
 
@@ -65,7 +65,7 @@ rows.map((e)=>{
 
 
     
-    res.send(data)
+    res.send(data[0])
     }
 } catch (error) {
     res.send(error)
