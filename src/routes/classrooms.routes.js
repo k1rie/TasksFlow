@@ -12,6 +12,6 @@ router.delete("/deleteClassroom/:id",deleteClassroom)
 
 router.patch("/updateGroup",updateClassroom)
 
-router.get("/getDataList/:groupId",getDataList)
+router.get("/getDataList/:groupId/:grade/:group/:area",getDataList)
 
 export default router
