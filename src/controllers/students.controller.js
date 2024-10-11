@@ -128,7 +128,13 @@ export const deleteStudent = async(req,res)=>{
 
         if(row.length > 0){
         await pool.query("SET FOREIGN_KEY_CHECKS=0")
+        const group = await pool.query("SELECT * FROM classrooms WHERE id = ?",
+            [req.body.groupId]
+        )
         const data = await pool.query("DELETE FROM students WHERE id = ? ",[req.params.id])
+        await pool.query("UPDATE classrooms SET alumnos = ? WHERE id = ?",
+            [group[0][0].alumnos-1,req.body.groupId]
+        )
         await pool.query("SET FOREIGN_KEY_CHECKS=1")
         res.send(data[0])
         }
