@@ -13,7 +13,7 @@ router.delete("/deleteStudent/:id",deleteStudent)
 
 router.patch("/updateStudent/:id",updateStudent)
 
-router.post("/attendance/:name/:lastName/:grade/:group/:area/:email",attendenceStudent)
+router.post("/attendance",attendenceStudent)
 
 router.post("/createPermission",createPermission)
 
