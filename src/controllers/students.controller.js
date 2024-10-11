@@ -41,7 +41,7 @@ rows.map((e)=>{
         secure: true,             // True para 465, false para otros puertos
         auth: {
           user: "d628587@gmail.com", // Tu correo
-          pass: "loxq lngu ijxd trxg",         // Contraseña de tu correo
+          pass: "sose ogiz orks eyvi",         // Contraseña de tu correo
         },
       });
 
