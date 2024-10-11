@@ -22,6 +22,6 @@ router.post("/createAttendance",createAttendance)
 
 router.get("/getPermissions/:id",getPermissions)
 
-router.get("/getStudentAttendance/:id,getAttendenceStudent)
+router.get("/getStudentAttendance/:id",getAttendenceStudent)
 
 export default router
