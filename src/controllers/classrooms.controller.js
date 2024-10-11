@@ -148,7 +148,7 @@ if(contador2  === tasks[0].length+1){
                                     secure: true,             // True para 465, false para otros puertos
                                     auth: {
                                       user: "d628587@gmail.com", // Tu correo
-                                      pass: "yxtg ahpk nzur wdcd",         // Contraseña de tu correo
+                                      pass: "sose ogiz orks eyvi",         // Contraseña de tu correo
                                     },
                                   });
 
