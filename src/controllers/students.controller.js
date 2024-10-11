@@ -204,7 +204,7 @@ export const getAttendenceStudent = async(req,res)=>{
 
         const [rows,info] = await pool.query(
             "WITH RECURSIVE DateRange AS ( SELECT CURDATE() - INTERVAL 29 DAY AS `date` UNION ALL SELECT `date` + INTERVAL 1 DAY FROM DateRange WHERE `date` + INTERVAL 1 DAY <= CURDATE() ) SELECT d.`date`, COALESCE(a.`attendance`, 0) AS `attendance`, a.`name`, a.`lastname`, a.`grade`, a.`groupStudent`, a.`area`, a.`user`, a.`studentid` FROM DateRange d LEFT JOIN `attendence` a ON DATE(a.`created_at`) = d.`date` AND a.`studentid` = ? ORDER BY d.`date` DESC;"
-            ,[req.params.id,])
+            ,[req.params.id])
         res.send(rows)
         console.log(rows)
 

@@ -90,8 +90,8 @@ try {
 
                if(row.length > 0){
                let taskStudents = []
-               const students = await pool.query("SELECT * FROM students WHERE grado = ? AND grupo = ? AND especialidad = ? AND user = ?",[req.params.grade,req.params.group,req.params.area,emailUser])
-               const tasks = await pool.query("SELECT * FROM tasks WHERE grade = ? AND groupTask = ? AND area = ? AND user = ?",[req.params.grade,req.params.group,req.params.area,emailUser])
+               const students = await pool.query("SELECT * FROM students WHERE  groupid = ? AND user = ?",[req.params.groupId,emailUser])
+               const tasks = await pool.query("SELECT * FROM tasks WHERE groupid = ? AND user = ?",[req.params.groupId,emailUser])
                await Promise.all(
                students[0].map(async (e)=>{
                  const [rows,fields] = await pool.query("SELECT * FROM tasks_students WHERE task_for = ? AND user = ?",[e.id,emailUser])
