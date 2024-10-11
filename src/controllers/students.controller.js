@@ -175,7 +175,7 @@ export const attendenceStudent = async(req,res)=>{
             console.log("ddd")
 
         const data = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance,studentid) VALUES(?,?,?,?,?,?,?,?) "
-            ,[req.params.body,req.params.body,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.id])
+            ,[req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.id])
         res.send({response:true})
         }
         console.log("aaa")
