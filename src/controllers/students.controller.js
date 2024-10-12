@@ -82,7 +82,7 @@ export const getStudents = async(req,res)=>{
         const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
 
         if(row.length > 0){
-        const data = await pool.query("SELECT * FROM students WHERE groupId = ? AND user = ?",[req.params.groupId,emailUser])
+        const data = await pool.query("SELECT * FROM students WHERE groupId = ? AND user = ? ORDER BY lastname ASC",[req.params.groupId,emailUser])
         if(data[0].length > 0){
             console.log(data[0])
             res.send(data[0])
