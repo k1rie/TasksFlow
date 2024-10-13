@@ -1,10 +1,12 @@
 import {Router} from "express"
-import {getClassrooms, createClassroom, deleteClassroom, updateClassroom, getDataList} from "../controllers/classrooms.controller.js"
+import {getClassrooms, createClassroom, deleteClassroom, updateClassroom, getDataList, getClassroom} from "../controllers/classrooms.controller.js"
 
 
 const router = Router()
 
 router.get("/getClassrooms",getClassrooms)
+
+router.get("/getClassroom/:id",getClassroom)
 
 router.post("/createClassroom", createClassroom)
 

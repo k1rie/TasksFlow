@@ -17,6 +17,20 @@ export const getClassrooms= async (req,res)=>{
    }
     }
 
+    export const getClassroom= async (req,res)=>{
+      const authHeader = req.headers['authorization'];
+      const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
+      const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+      const [emailUser, password] = credentials.split(':');
+      const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
+   
+      if(row.length > 0){
+      const data = await pool.query("SELECT * FROM classrooms WHERE id = ? AND user = ?",[req.params.id,emailUser])
+      
+      res.send(data[0])
+      }
+       }
+
 
     export const createClassroom = async (req,res)=>{
 try {
