@@ -179,8 +179,10 @@ const [student,info] = await pool.query("SELECT * FROM students WHERE id = ? AND
         const data = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance,studentid) VALUES(?,?,?,?,?,?,?,?) "
             ,[req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.id])
         res.send({response:true})
+       }else{
+        res.send({response:false})
        }
-       res.send({response:false})
+      
         }
         console.log("aaa")
     }catch(error){
