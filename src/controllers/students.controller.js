@@ -177,7 +177,7 @@ const [student,info] = await pool.query("SELECT * FROM students WHERE id = ? AND
 
        if(student.length > 0){
         const data = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance,studentid) VALUES(?,?,?,?,?,?,?,?) "
-            ,[req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.id])
+            ,[student.nombre,student.apellidos,student.grado,student.grupo,student.area,emailUser,1,student.id])
         res.send({response:true})
        }else{
         res.send({response:false})
