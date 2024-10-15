@@ -173,10 +173,14 @@ export const attendenceStudent = async(req,res)=>{
 
         if(row.length > 0){
             console.log("ddd")
+const [student,info] = await pool.query("SELECT * FROM students WHERE id = ? AND user = ?",[req.body.id,emailUser])
 
+       if(student.length > 0){
         const data = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance,studentid) VALUES(?,?,?,?,?,?,?,?) "
             ,[req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.id])
         res.send({response:true})
+       }
+       res.send({response:false})
         }
         console.log("aaa")
     }catch(error){
