@@ -176,6 +176,8 @@ export const attendenceStudent = async(req,res)=>{
 const [student,info] = await pool.query("SELECT * FROM students WHERE id = ? AND user = ?",[req.body.id,emailUser])
 
        if(student.length > 0){
+        console.log("puipipi")
+        console.log(student)
         const data = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance,studentid) VALUES(?,?,?,?,?,?,?,?) "
             ,[student.nombre,student.apellidos,student.grado,student.grupo,student.area,emailUser,1,student.id])
         res.send({response:true})
