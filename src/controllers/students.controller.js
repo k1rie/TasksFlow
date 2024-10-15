@@ -179,7 +179,7 @@ const [student,info] = await pool.query("SELECT * FROM students WHERE id = ? AND
         console.log("puipipi")
         console.log(student)
         const data = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance,studentid) VALUES(?,?,?,?,?,?,?,?) "
-            ,[student.nombre,student.apellidos,student.grado,student.grupo,student.area,emailUser,1,student.id])
+            ,[student[0].nombre,student[0].apellidos,student[0].grado,student[0].grupo,student[0].area,emailUser,1,student[0].id])
         res.send({response:true})
        }else{
         res.send({response:false})
