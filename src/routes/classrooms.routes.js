@@ -1,5 +1,5 @@
 import {Router} from "express"
-import {getClassrooms, createClassroom, deleteClassroom, updateClassroom, getDataList, getClassroom, getAllDataList} from "../controllers/classrooms.controller.js"
+import {getClassrooms, createClassroom, deleteClassroom, updateClassroom, getDataList, getClassroom, getAllDataList, getResume, getCalifications} from "../controllers/classrooms.controller.js"
 
 
 const router = Router()
@@ -16,6 +16,9 @@ router.patch("/updateGroup",updateClassroom)
 
 router.get("/getDataList/:groupId/:grade/:group/:area",getDataList)
 
-router.get("/getAllDataList/:idGroup",getAllDataList)
+router.get("/getResume/:idGroup",getResume)
+
+router.get("/getCalifications/:idGroup",getCalifications)
+
 
 export default router

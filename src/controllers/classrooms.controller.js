@@ -194,7 +194,7 @@ if(contador2  === tasks[0].length+1){
               }
              }
 
-             export const getAllDataList = async (req,res)=>{
+             export const getResume = async (req,res)=>{
               const authHeader = req.headers['authorization'];
               const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
               const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
@@ -261,8 +261,58 @@ GROUP BY
                 res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
 
+                let transporter =  nodeMailer.createTransport({
+                  host: "smtp.gmail.com",  // Servidor SMTP (por ejemplo: smtp.gmail.com)
+                  port: 465,                 // Puerto (normalmente 587 o 465 para SSL)
+                  secure: true,             // True para 465, false para otros puertos
+                  auth: {
+                    user: "d628587@gmail.com", // Tu correo
+                    pass: "sose ogiz orks eyvi",         // Contraseña de tu correo
+                  },
+                });
+console.log(group)
+
+                    // Enviar correo
+                    let info = await transporter.sendMail({
+                      from: '"Remitente" <d628587@gmail.com>', // Remitente
+                      to: emailUser,                            // Lista de destinatarios
+                      subject: "SmartClass",
+                      text: `Aqui está tu resumen de ${group[0].grado} ${group[0].grupo} ${group[0].especialidad}`      ,
+                      attachments: [
+                        {   // Adjuntar el archivo Excel en memoria
+                          filename: 'Resumen.xlsx',
+                          content: excelBuffer,  // El contenido del archivo adjunto como buffer
+                          contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // Tipo MIME para Excel
+                        },
+                      ]                       // Asunto del correo                          // Cuerpo del correo en HTML
+                    });
+                                                    
+               
+
+               
+                res.send(excelBuffer);
+
+              } 
+             }catch(err){
+              res.send(err)
+             }
+            }
+
+            export const getCalifications = async (req,res)=>{
+              const authHeader = req.headers['authorization'];
+              const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
+              const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+              const [emailUser, password] = credentials.split(':');
+              console.log("aa")
+             try {
+              const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
+
+              if(row.length > 0){
+                console.log("bb")
+                const [group,infoGroupQuery] = await pool.query("SELECT * FROM classrooms WHERE id = ? AND user = ?",[req.params.idGroup,emailUser])
+          
                 ///////////////////////////
-                const [rows2] = await pool.query(`
+                const [rows] = await pool.query(`
                 SELECT 
     s.nombre AS nombre_alumno,
     s.apellidos AS apellidos_alumno,
@@ -282,25 +332,25 @@ GROUP BY
                           
 
 
-                const workbook2 = await XlsxPopulate.fromBlankAsync();
+                const workbook = await XlsxPopulate.fromBlankAsync();
         
                 // Seleccionar la hoja de trabajo (por defecto)
-                const sheet2 = workbook2.sheet(0);
+                const sheet = workbook.sheet(0);
         
                 // Establecer los encabezados
-                sheet2.cell("A1").value("Apellidos");
-                sheet2.cell("B1").value("Nombres");
-                sheet2.cell("C1").value("Calificaciones");
+                sheet.cell("A1").value("Apellidos");
+                sheet.cell("B1").value("Nombres");
+                sheet.cell("C1").value("Calificaciones");
         
                 // Insertar los datos en la hoja de trabajo
                 rows.forEach((row, index) => {
                     const rowIndex = index + 2; // Comenzar en la fila 2
-                    sheet2.cell(`A${rowIndex}`).value(row.apellidos_alumno);
-                    sheet2.cell(`B${rowIndex}`).value(row.nombre_alumno);
-                    sheet2.cell(`C${rowIndex}`).value(row.suma_total_calificaciones/10);
+                    sheet.cell(`A${rowIndex}`).value(row.apellidos_alumno);
+                    sheet.cell(`B${rowIndex}`).value(row.nombre_alumno);
+                    sheet.cell(`C${rowIndex}`).value(row.suma_total_calificaciones/10);
                 });
         
-                const excelBuffer2 = await workbook2.outputAsync();
+                const excelBuffer = await workbook.outputAsync();
 
 
                 let transporter =  nodeMailer.createTransport({
@@ -319,16 +369,11 @@ console.log(group)
                       from: '"Remitente" <d628587@gmail.com>', // Remitente
                       to: emailUser,                            // Lista de destinatarios
                       subject: "Calificaciones Excel",
-                      text: `Aqui está tu resumen de ${group[0].grado} ${group[0].grupo} ${group[0].especialidad}`      ,
+                      text: `Aqui están tus calificaciones de ${group[0].grado} ${group[0].grupo} ${group[0].especialidad}`      ,
                       attachments: [
                         {   // Adjuntar el archivo Excel en memoria
-                          filename: 'Resumen.xlsx',
-                          content: excelBuffer,  // El contenido del archivo adjunto como buffer
-                          contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // Tipo MIME para Excel
-                        },
-                        {
                           filename: 'Calificaciones.xlsx',
-                          content: excelBuffer2,  // El contenido del archivo adjunto como buffer
+                          content: excelBuffer,  // El contenido del archivo adjunto como buffer
                           contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // Tipo MIME para Excel
                         }
                       ]                       // Asunto del correo                          // Cuerpo del correo en HTML
@@ -337,10 +382,12 @@ console.log(group)
                
 
                
-                res.send({resumen:excelBuffer,calificaciones:excelBuffer2});
+                res.send(excelBuffer);
 
               } 
              }catch(err){
               res.send(err)
              }
             }
+
+            
