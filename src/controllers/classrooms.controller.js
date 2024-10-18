@@ -274,9 +274,9 @@ console.log(group)
 
                     // Enviar correo
                     let info = await transporter.sendMail({
-                      from: '"Remitente" <d628587@gmail.com>', // Remitente
+                      from: '"SmartClass" <d628587@gmail.com>', // Remitente
                       to: emailUser,                            // Lista de destinatarios
-                      subject: "SmartClass",
+                      subject: "Resumen",
                       text: `Aqui está tu resumen de ${group[0].grado} ${group[0].grupo} ${group[0].especialidad}`      ,
                       attachments: [
                         {   // Adjuntar el archivo Excel en memoria
@@ -366,9 +366,9 @@ console.log(group)
 
                     // Enviar correo
                     let info = await transporter.sendMail({
-                      from: '"Remitente" <d628587@gmail.com>', // Remitente
+                      from: '"SmartClass" <d628587@gmail.com>', // Remitente
                       to: emailUser,                            // Lista de destinatarios
-                      subject: "Calificaciones Excel",
+                      subject: "Calificaciones ",
                       text: `Aqui están tus calificaciones de ${group[0].grado} ${group[0].grupo} ${group[0].especialidad}`      ,
                       attachments: [
                         {   // Adjuntar el archivo Excel en memoria
