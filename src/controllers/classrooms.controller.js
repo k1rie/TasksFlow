@@ -390,4 +390,74 @@ console.log(group)
              }
             }
 
+            export const getAttendances = async (req, res) => {
+              const authHeader = req.headers['authorization'];
+              const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
+              const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+              const [emailUser, password] = credentials.split(':');
             
+              try {
+                const [row, info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?", [emailUser, password]);
+            
+                if (row.length > 0) {
+                  const [rows, info] = await pool.query(`
+                    SELECT 
+                      s.id AS student_id,
+                      s.nombre,
+                      s.apellidos,
+                      COALESCE(a.attendance, 'No registrada') AS estado_asistencia, 
+                      a.ispermission,
+                      a.created_at AS fecha_asistencia
+                    FROM 
+                      students s
+                    LEFT JOIN 
+                      attendence a ON s.id = a.studentid AND DATE(a.created_at) = ? 
+                    WHERE 
+                      s.groupid = ? 
+                      AND s.user = ?
+                    ORDER BY 
+                      s.id;`, [req.params.date, req.params.idGroup, emailUser]);
+            
+                  const workbook = await XlsxPopulate.fromBlankAsync();
+                  const sheet = workbook.sheet(0);
+            
+                  // Especificar encabezados en la primera fila
+                  const headers = ["Apellidos", "Nombre", "Asistencia", "Fecha"];
+                  headers.forEach((header, index) => {
+                    sheet.cell(1, index + 1).value(header);
+                  });
+            
+                  // Agregar los datos de asistencia en las siguientes filas
+                  rows.forEach((item, rowIndex) => {
+                    sheet.cell(rowIndex + 2, 1).value(item.apellidos);       // Apellidos
+                    sheet.cell(rowIndex + 2, 2).value(item.nombre);          // Nombre
+            
+                    // Logica para asistencia: "permiso" si ispermission = 1, "✓" si asistió, "✗" si no asistió
+                    let asistencia = '';
+                    if (item.ispermission === 1) {
+                      asistencia = 'Permiso';
+                    } else if (item.estado_asistencia === '1') {
+                      asistencia = '✓';
+                    } else {
+                      asistencia = '✗';
+                    }
+                    sheet.cell(rowIndex + 2, 3).value(asistencia);
+            
+                    // Escribir la fecha de asistencia
+                    sheet.cell(rowIndex + 2, 4).value(req.params.date);
+                  });
+            
+                  // Escribir el archivo a un buffer
+                  const excelBuffer = await workbook.outputAsync();
+            
+                  // Establecer encabezados para la descarga del archivo
+                  res.setHeader('Content-Disposition', 'attachment; filename="asistencia.xlsx"');
+                  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            
+                  // Enviar el archivo como respuesta
+                  res.send(excelBuffer);
+                }
+              } catch (error) {
+                res.send(error);
+              }
+            };

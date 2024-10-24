@@ -236,8 +236,8 @@ export const createPermission = async(req,res)=>{
         console.log("ddd")
 
         if(row.length > 0){
-const [rows,info] = await pool.query("INSERT INTO permissions (name,lastname,grade,groupStudent,area,user,permission,reason,created_at,studentid) VALUES(?,?,?,?,?,?,?,?,?,?)",
-    [req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.reason,req.body.date,req.body.id]
+const [rows,info] = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance,ispermission,reason,created_at,studentid) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+    [req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,1,req.body.reason,req.body.date,req.body.id]
 )
 console.log(rows)
 res.send({response:true})
@@ -259,8 +259,8 @@ console.log(err)
             console.log("ddd")
     
             if(row.length > 0){
-    const [rows,info] = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance,created_at,studentid) VALUES(?,?,?,?,?,?,?,?,?)",
-        [req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.date,req.body.id]
+    const [rows,info] = await pool.query("INSERT INTO attendence (name,lastname,grade,groupStudent,area,user,attendance,created_at,studentid,ispermission) VALUES(?,?,?,?,?,?,?,?,?,?)",
+        [req.body.name,req.body.lastName,req.body.grade,req.body.group,req.body.area,emailUser,1,req.body.date,req.body.id,0]
     )
     console.log(rows)
     res.send({response:true})

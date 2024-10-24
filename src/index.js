@@ -9,6 +9,8 @@ import userRoutes from "./routes/user.routes.js"
 const App = express()
 App.use(cors())
 App.use(express.json())
+App.use(express.urlencoded({ extended: true }));
+
 
 App.listen(3001,()=>{
 console.log("listening on")

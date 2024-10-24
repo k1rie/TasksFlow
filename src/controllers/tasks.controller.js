@@ -146,7 +146,8 @@ const tasks = await pool.query("SELECT * FROM tasks_students WHERE task_for = ? 
 
 tasks[0].forEach(async (e)=>{
   const percentage = ((Number(e.final_rate)*100)/Number(req.body.rate))/100
-  await pool.query("UPDATE tasks_students SET final_rate = ? WHERE task_for = ? AND name = ? AND user = ?",[percentage*Number(req.body.newRate),e.task_for,e.name,req.body.emailUser])
+  console.log(percentage)
+  await pool.query("UPDATE tasks_students SET final_rate = ? WHERE task_for = ? AND name = ? AND user = ?",[percentage*req.body.newRate,element.id,e.name,req.body.emailUser])
 })
                })
                
