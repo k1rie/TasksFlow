@@ -39,7 +39,7 @@ let transporter =  nodeMailer.createTransport({
         from: '"Remitente" <d628587@gmail.com>',
         to: student.correo,
         subject: `${student.apellidos} ${student.nombre} QR`,
-        text: `Aquí está tu código QR en formato PNG para la clase ${req.body.grado} ${req.body.grupo} ${req.body.especialidad}`,
+        text: `Aquí está tu código QR en formato PNG para la clase ${student.grado} ${student.grupo} ${student.especialidad}`,
         attachments: [
           {
             filename: 'qrcode.png', // Nombre del archivo adjunto
@@ -52,6 +52,7 @@ let transporter =  nodeMailer.createTransport({
 
 
     }
+    res.send({response:"true"})
 }catch(error){
     res.send(error)
 }
