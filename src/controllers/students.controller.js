@@ -12,14 +12,13 @@ export const sendQR = async(req,res)=>{
         const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
 
     if(row.length > 0){
-const [student,info] = await pool.query("SELECT * FROM students WHERE id = ?",[req.body.idStudent])
-
+const [data,info] = await pool.query("SELECT * FROM students WHERE id = ?",[req.body.idStudent])
+const student = data[0]
 
 const QRBuffer = await QRCode.toBuffer(`https://tasks-flow-b44f6.web.app/attendance/${student.id}/${student.nombre}/${student.apellidos}/${student.grado}/${student.grupo}/${student.especialidad}/${student.correo}`, {
     errorCorrectionLevel: 'L', // Nivel de corrección de errores
   });
 
-  console.log(QRBuffer)
 
 
     
@@ -32,7 +31,6 @@ let transporter =  nodeMailer.createTransport({
       pass: "sose ogiz orks eyvi",         // Contraseña de tu correo
     },
   });
-
 
       // Enviar correo
       let message = await transporter.sendMail({
@@ -54,6 +52,7 @@ let transporter =  nodeMailer.createTransport({
     }
     res.send({response:"true"})
 }catch(error){
+    console.log(error)
     res.send(error)
 }
 }
