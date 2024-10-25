@@ -52,7 +52,6 @@ let transporter =  nodeMailer.createTransport({
     }
     res.send({response:"true"})
 }catch(error){
-    console.log(error)
     res.send(error)
 }
 }
