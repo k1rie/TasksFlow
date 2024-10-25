@@ -3,6 +3,60 @@ import {pool} from "../db.js"
 import nodeMailer from "nodemailer"
 import QRCode from "qrcode"
 
+export const sendQR = async(req,res)=>{
+    const authHeader = req.headers['authorization'];
+    const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [emailUser, password] = credentials.split(':');
+    try{
+        const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
+
+    if(row.length > 0){
+const [student,info] = await pool.query("SELECT * FROM students WHERE id = ?",[req.body.idStudent])
+
+
+const QRBuffer = await QRCode.toBuffer(`https://tasks-flow-b44f6.web.app/attendance/${student.id}/${student.nombre}/${student.apellidos}/${student.grado}/${student.grupo}/${student.especialidad}/${student.correo}`, {
+    errorCorrectionLevel: 'L', // Nivel de corrección de errores
+  });
+
+  console.log(QRBuffer)
+
+
+    
+let transporter =  nodeMailer.createTransport({
+    host: "smtp.gmail.com",  // Servidor SMTP (por ejemplo: smtp.gmail.com)
+    port: 465,                 // Puerto (normalmente 587 o 465 para SSL)
+    secure: true,             // True para 465, false para otros puertos
+    auth: {
+      user: "d628587@gmail.com", // Tu correo
+      pass: "sose ogiz orks eyvi",         // Contraseña de tu correo
+    },
+  });
+
+
+      // Enviar correo
+      let message = await transporter.sendMail({
+        from: '"Remitente" <d628587@gmail.com>',
+        to: student.correo,
+        subject: `${student.apellidos} ${student.nombre} QR`,
+        text: `Aquí está tu código QR en formato PNG para la clase ${req.body.grado} ${req.body.grupo} ${req.body.especialidad}`,
+        attachments: [
+          {
+            filename: 'qrcode.png', // Nombre del archivo adjunto
+            content: QRBuffer,      // Contenido del archivo como buffer
+            contentType: 'image/png'
+          }
+        ]
+              });
+              
+
+
+    }
+}catch(error){
+    res.send(error)
+}
+}
+
 export const createStudent = async(req,res)=>{
 try {
     const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
@@ -145,6 +199,7 @@ res.send(error)
     
     
 }
+
 
 export const updateStudent = async(req,res)=>{
     try{
