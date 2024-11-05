@@ -104,7 +104,7 @@ try {
 
                if(row.length > 0){
                let taskStudents = []
-               const students = await pool.query("SELECT * FROM students WHERE  groupid = ? AND user = ?",[req.params.groupId,emailUser])
+               const students = await pool.query("SELECT * FROM students WHERE  groupid = ? AND user = ? ORDER BY nombre ASC",[req.params.groupId,emailUser])
                const tasks = await pool.query("SELECT * FROM tasks WHERE groupid = ? AND user = ?",[req.params.groupId,emailUser])
                await Promise.all(
                students[0].map(async (e)=>{
@@ -224,7 +224,10 @@ WHERE
     s.groupid = ?  
     AND c.user = ?
 GROUP BY 
-    s.id, s.nombre, s.apellidos;
+    s.id, s.nombre, s.apellidos
+ORDER BY 
+    s.nombre ASC;
+
                 `, [req.params.idGroup,emailUser]);
         
                 // Crear un nuevo libro de trabajo (workbook) con xlsx-populate
@@ -313,7 +316,7 @@ console.log(group)
           
                 ///////////////////////////
                 const [rows] = await pool.query(`
-                SELECT 
+             SELECT 
     s.nombre AS nombre_alumno,
     s.apellidos AS apellidos_alumno,
     COALESCE(SUM(ts.final_rate), 0) AS suma_total_calificaciones
@@ -327,7 +330,10 @@ WHERE
     s.groupid = ?  
     AND c.user = ?
 GROUP BY 
-    s.id, s.nombre, s.apellidos;
+    s.id, s.nombre, s.apellidos
+ORDER BY 
+    s.nombre ASC;
+
                                   `, [req.params.idGroup,emailUser]);
                           
 
@@ -401,22 +407,23 @@ console.log(group)
             
                 if (row.length > 0) {
                   const [rows, info] = await pool.query(`
-                    SELECT 
-                      s.id AS student_id,
-                      s.nombre,
-                      s.apellidos,
-                      COALESCE(a.attendance, 'No registrada') AS estado_asistencia, 
-                      a.ispermission,
-                      a.created_at AS fecha_asistencia
-                    FROM 
-                      students s
-                    LEFT JOIN 
-                      attendence a ON s.id = a.studentid AND DATE(a.created_at) = ? 
-                    WHERE 
-                      s.groupid = ? 
-                      AND s.user = ?
-                    ORDER BY 
-                      s.id;`, [req.params.date, req.params.idGroup, emailUser]);
+                   SELECT 
+    s.id AS student_id,
+    s.nombre,
+    s.apellidos,
+    COALESCE(a.attendance, 'No registrada') AS estado_asistencia, 
+    a.ispermission,
+    a.created_at AS fecha_asistencia
+FROM 
+    students s
+LEFT JOIN 
+    attendence a ON s.id = a.studentid AND DATE(a.created_at) = ? 
+WHERE 
+    s.groupid = ? 
+    AND s.user = ?
+ORDER BY 
+    s.nombre ASC;
+`, [req.params.date, req.params.idGroup, emailUser]);
             
                   const workbook = await XlsxPopulate.fromBlankAsync();
                   const sheet = workbook.sheet(0);
