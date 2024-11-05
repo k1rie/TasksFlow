@@ -104,7 +104,11 @@ try {
 
                if(row.length > 0){
                let taskStudents = []
-               const students = await pool.query("SELECT * FROM students WHERE  groupid = ? AND user = ? ORDER BY apellidos ASC",[req.params.groupId,emailUser])
+               const students = await pool.query(`SELECT * 
+FROM students 
+WHERE groupid = ? 
+  AND user = ? 
+ORDER BY apellidos ASC;`,[req.params.groupId,emailUser])
                const tasks = await pool.query("SELECT * FROM tasks WHERE groupid = ? AND user = ?",[req.params.groupId,emailUser])
                await Promise.all(
                students[0].map(async (e)=>{
