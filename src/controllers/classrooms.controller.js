@@ -104,7 +104,7 @@ try {
 
                if(row.length > 0){
                let taskStudents = []
-               const students = await pool.query("SELECT * FROM students WHERE  groupid = ? AND user = ? ORDER BY nombre ASC",[req.params.groupId,emailUser])
+               const students = await pool.query("SELECT * FROM students WHERE  groupid = ? AND user = ? ORDER BY apellidos ASC",[req.params.groupId,emailUser])
                const tasks = await pool.query("SELECT * FROM tasks WHERE groupid = ? AND user = ?",[req.params.groupId,emailUser])
                await Promise.all(
                students[0].map(async (e)=>{
@@ -226,7 +226,7 @@ WHERE
 GROUP BY 
     s.id, s.nombre, s.apellidos
 ORDER BY 
-    s.nombre ASC;
+    s.apellidos ASC;
 
                 `, [req.params.idGroup,emailUser]);
         
@@ -332,7 +332,7 @@ WHERE
 GROUP BY 
     s.id, s.nombre, s.apellidos
 ORDER BY 
-    s.nombre ASC;
+    s.apellidos ASC;
 
                                   `, [req.params.idGroup,emailUser]);
                           
@@ -422,7 +422,7 @@ WHERE
     s.groupid = ? 
     AND s.user = ?
 ORDER BY 
-    s.nombre ASC;
+    s.apellidos ASC;
 `, [req.params.date, req.params.idGroup, emailUser]);
             
                   const workbook = await XlsxPopulate.fromBlankAsync();
