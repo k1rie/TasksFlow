@@ -170,6 +170,22 @@ export const getStudent = async(req,res)=>{
     }catch(error){
 res.send(error)
     }
+
+    export const getStudentByName = async(req,res)=>{
+    const authHeader = req.headers['authorization'];
+    const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [emailUser, password] = credentials.split(':');
+    try{
+        const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
+
+        if(row.length > 0){
+        const data = await pool.query("SELECT * FROM students WHERE apellidos LIKE CONCAT('%', ?, '%') AND user = ?",[req.params.name,emailUser])
+        res.send(data[0])
+        }
+    }catch(error){
+res.send(error)
+    }
     
     
     
