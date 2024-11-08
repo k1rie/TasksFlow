@@ -61,7 +61,8 @@ export const getClassrooms= async (req,res)=>{
             if (row.length > 0) {
                 const [students] = await pool.query("SELECT * FROM students WHERE groupid = ? AND user = ?", [req.body.idGroup, emailUser]);
                 const [group] = await pool.query("SELECT * FROM classrooms WHERE id = ? AND user = ?", [req.body.idGroup, emailUser]);
-                
+                const [newGroup] = await pool.query("SELECT * FROM classrooms WHERE id = ? AND user = ?", [req.body.idNewGroup, emailUser]);
+
                 // Usar Promise.all para manejar las operaciones asíncronas en paralelo
                 await Promise.all(students.map(async (student) => {
                     const [data] = await pool.query(
@@ -80,7 +81,7 @@ export const getClassrooms= async (req,res)=>{
                     
                     await pool.query(
                         "UPDATE classrooms SET alumnos = ? WHERE id = ?",
-                        [group[0].alumnos + 1, req.body.idNewGroup]
+                        [newGroup[0].alumnos + 1, req.body.idNewGroup]
                     );
                     
                     const QRBuffer = await QRCode.toBuffer(
