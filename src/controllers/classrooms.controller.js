@@ -79,8 +79,8 @@ export const getClassrooms= async (req,res)=>{
                     }
                     
                     await pool.query(
-                        "UPDATE classrooms SET alumnos = ? WHERE especialidad = ? AND grado = ? AND grupo = ?",
-                        [group[0].alumnos + 1, group[0].especialidad, group[0].grado, group[0].grupo]
+                        "UPDATE classrooms SET alumnos = ? WHERE id = ?",
+                        [group[0].alumnos + 1, req.body.idNewGroup]
                     );
                     
                     const QRBuffer = await QRCode.toBuffer(
