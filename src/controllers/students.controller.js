@@ -157,105 +157,37 @@ res.send(error)
 
 export const getStudent = async(req,res)=>{
     const authHeader = req.headers['authorization'];
-    const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
+    const base64Credentials = authHeader.split(' ')[1];
     const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
     const [emailUser, password] = credentials.split(':');
     try{
         const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
 
         if(row.length > 0){
-        const data = await pool.query("SELECT * FROM students WHERE id = ? AND user = ?",[req.params.id,emailUser])
-        res.send(data[0])
+            const data = await pool.query("SELECT * FROM students WHERE id = ? AND user = ?",[req.params.id,emailUser])
+            res.send(data[0])
         }
     }catch(error){
-res.send(error)
+        res.send(error)
     }
+} 
 
 
-    export const getStudentByName = async (req, res) => {
-    try {
-        // Validar header de autorización
-        const authHeader = req.headers['authorization'];
-        if (!authHeader) {
-            return res.status(401).json({
-                success: false,
-                message: 'No se proporcionó autorización'
-            });
+    export const getStudentByName = async(req,res)=>{
+    const authHeader = req.headers['authorization'];
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [emailUser, password] = credentials.split(':');
+    try{
+        const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
+        if(row.length > 0){
+            const data = await pool.query("SELECT * FROM students WHERE apellidos LIKE CONCAT('%', ?, '%') AND user = ?",[req.params.name,emailUser])
+            res.send(data[0])
         }
-
-        // Validar formato del header
-        if (!authHeader.startsWith('Basic ')) {
-            return res.status(401).json({
-                success: false,
-                message: 'Formato de autorización inválido'
-            });
-        }
-
-        // Decodificar credenciales
-        try {
-            const base64Credentials = authHeader.split(' ')[1];
-            const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-            const [emailUser, password] = credentials.split(':');
-
-            if (!emailUser || !password) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'Credenciales incompletas'
-                });
-            }
-
-            // Verificar usuario
-            const [users] = await pool.query(
-                "SELECT * FROM users WHERE email = ?",
-                [emailUser]
-            );
-
-            if (users.length === 0) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'Usuario no encontrado'
-                });
-            }
-
-            const user = users[0];
-            
-            // Aquí deberías usar bcrypt.compare() en lugar de comparar directamente
-            // const passwordMatch = await bcrypt.compare(password, user.password);
-            if (user.password !== password) { // Esto debería cambiarse por la comparación con bcrypt
-                return res.status(401).json({
-                    success: false,
-                    message: 'Credenciales inválidas'
-                });
-            }
-
-            // Buscar estudiantes
-            const [students] = await pool.query(
-                "SELECT * FROM students WHERE apellidos LIKE ? AND user = ?",
-                [`%${req.params.name}%`, emailUser]
-            );
-
-            return res.status(200).json({
-                success: true,
-                data: students
-            });
-
-        } catch (error) {
-            console.error('Error al decodificar credenciales:', error);
-            return res.status(401).json({
-                success: false,
-                message: 'Error en la autorización'
-            });
-        }
-
-    } catch (error) {
-        console.error('Error en getStudentByName:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Error interno del servidor'
-        });
+    }catch(error){
+        res.send(error)
     }
-};
-
+}
 export const deleteStudent = async(req,res)=>{
     try{
         const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[req.body.emailUser,req.body.password])
