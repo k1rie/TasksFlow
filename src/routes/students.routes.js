@@ -1,5 +1,5 @@
 import {Router} from "express"
-import {createStudent,getStudents,getStudent, deleteStudent, updateStudent, attendenceStudent, getAttendenceStudent, createPermission, getPermissions, createAttendance, sendQR} from "../controllers/students.controller.js"
+import {createStudent,getStudents,getStudent, deleteStudent, updateStudent, attendenceStudent, getAttendenceStudent, createPermission, getPermissions, createAttendance, sendQR,getStudentByName} from "../controllers/students.controller.js"
 
 const router = Router()
 
@@ -25,5 +25,10 @@ router.get("/getPermissions/:id",getPermissions)
 router.get("/getStudentAttendance/:id",getAttendenceStudent)
 
 router.post("/sendQR",sendQR)
+
+router.get("/getStudentByName/:name",getStudentByName)
+
+
+
 
 export default router
