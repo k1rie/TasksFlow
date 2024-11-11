@@ -26,7 +26,7 @@ router.get("/getStudentAttendance/:id",getAttendenceStudent)
 
 router.post("/sendQR",sendQR)
 
-router.get("/getStudentByName/:name",getStudentByName)
+router.get("/getStudentByName/:name/:groupid",getStudentByName)
 
 
 

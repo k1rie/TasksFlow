@@ -181,7 +181,7 @@ export const getStudent = async(req,res)=>{
     try{
         const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
         if(row.length > 0){
-            const data = await pool.query("SELECT * FROM students WHERE apellidos LIKE CONCAT('%', ?, '%') AND user = ?",[req.params.name,emailUser])
+            const data = await pool.query("SELECT * FROM students WHERE apellidos LIKE CONCAT('%', ?, '%') AND groupid = ? AND user = ?",[req.params.name,req.params.groupid,emailUser])
             res.send(data[0])
         }
     }catch(error){

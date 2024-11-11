@@ -67,7 +67,7 @@ export const getClassrooms= async (req,res)=>{
                 await Promise.all(students.map(async (student) => {
                     const [data] = await pool.query(
                         "INSERT INTO students (nombre,apellidos,correo,especialidad,grado,grupo,user,groupid) VALUES(?,?,?,?,?,?,?,?)",
-                        [student.nombre, student.apellidos, student.correo, group[0].especialidad, group[0].grado, group[0].grupo, emailUser, req.body.idNewGroup]
+                        [student.nombre, student.apellidos, student.correo, newGroup[0].especialidad, newGroup[0].grado, newGroup[0].grupo, emailUser, req.body.idNewGroup]
                     );
                     
                     const [rows] = await pool.query("SELECT * FROM tasks WHERE groupid = ? and user = ?", [req.body.idNewGroup, emailUser]);
