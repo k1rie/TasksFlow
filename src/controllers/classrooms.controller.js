@@ -5,19 +5,40 @@ import XlsxPopulate from "xlsx-populate"
 import { createStudent } from "./students.controller.js";
 
 
-export const getClassrooms= async (req,res)=>{
-   const authHeader = req.headers['authorization'];
-   const base64Credentials = authHeader.split(' ')[1]; // Obtener la parte después de "Basic"
-   const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-   const [emailUser, password] = credentials.split(':');
-   const [row,info] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?",[emailUser,password])
-
-   if(row.length > 0){
-   const data = await pool.query("SELECT * FROM classrooms WHERE user = ?",[emailUser])
-   
-   res.send(data[0])
-   }
+export const getClassrooms = async (req, res) => {
+    try {
+        const authHeader = req.headers['authorization'];
+        if (!authHeader) {
+            return res.status(401).send('Autorización requerida');
+        }
+        
+        const base64Credentials = authHeader.split(' ')[1];
+        const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+        const [emailUser, password] = credentials.split(':');
+        
+        // Usar la función con reintentos
+        const [row, info] = await queryWithRetry(
+            "SELECT * FROM users WHERE email = ? AND password = ?",
+            [emailUser, password]
+        );
+        
+        if (row.length > 0) {
+            const data = await queryWithRetry(
+                "SELECT * FROM classrooms WHERE user = ?",
+                [emailUser]
+            );
+            res.send(data[0]);
+        } else {
+            res.status(401).send('Credenciales inválidas');
+        }
+    } catch (error) {
+        console.error("Error en getClassrooms:", error);
+        res.status(500).send({
+            error: 'Error al conectar con la base de datos',
+            details: error.message
+        });
     }
+}
 
     export const getClassroom= async (req,res)=>{
       const authHeader = req.headers['authorization'];
