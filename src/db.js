@@ -10,13 +10,11 @@ export const pool = createPool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
-    // Añadir estas configuraciones:
+    // Opciones válidas para mysql2
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
     connectTimeout: 60000, // Aumentar el tiempo de espera de conexión (en milisegundos)
-    acquireTimeout: 60000, // Tiempo de espera para adquirir una conexión
-    timeout: 60000, // Timeout general
     enableKeepAlive: true,
     keepAliveInitialDelay: 10000
 })
