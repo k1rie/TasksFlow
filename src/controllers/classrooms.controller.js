@@ -4,6 +4,23 @@ import QRCode from "qrcode"
 import XlsxPopulate from "xlsx-populate"
 import { createStudent } from "./students.controller.js";
 
+async function queryWithRetry(sqlQuery, params, maxRetries = 3) {
+    let retries = 0;
+    while (retries < maxRetries) {
+        try {
+            return await pool.query(sqlQuery, params);
+        } catch (error) {
+            if (error.code === 'ETIMEDOUT' && retries < maxRetries - 1) {
+                retries++;
+                console.log(`Intento ${retries} después de error de conexión`);
+                await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+            } else {
+                throw error;
+            }
+        }
+    }
+}
+
 
 export const getClassrooms = async (req, res) => {
     try {
