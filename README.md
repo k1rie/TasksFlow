@@ -4,7 +4,7 @@
 
 ---
 
-### 🚀 [Ver Demo en Vivo]([https://smartclass.alphatech-labs.com/])
+### 🚀 [Ver Demo en Vivo](https://smartclass.alphatech-labs.com/)
 
 SmartClass es un sistema de gestión académica diseñado para simplificar y automatizar las tareas administrativas de los docentes. Permite llevar un control eficiente de calificaciones, asistencias vía QR y cálculos de promedios, todo en una plataforma web intuitiva.
 
