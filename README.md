@@ -1,8 +1,5 @@
 # SmartClass - Academic Management System
 
-[![GitHub last commit](https://img.shields.io/github/last-commit/tu-usuario/smartclass)](https://github.com/tu-usuario/smartclass)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-
 🏆 **First Place Winner (State and Local Phases) - DGETI 2025 National Prototype Contest** 🏆
 
 ---
