@@ -23,7 +23,7 @@ This project was developed as part of the DGETI 2025 National Prototype Contest,
 * **📊 Grade Management & Reporting:**
     * Intuitive interface for teachers to record student grades by activity.
     * **Automated Calculation** of grading averages per student and per group.
-    * Supports **data export** into multiple standardized formats (e.g., PDF or CSV).
+    * Supports **data export** into multiple standardized formats (CSV).
 * **👤 Role-Based Profiles:**
     * Customized user views for Teachers (full control over class management).
 
