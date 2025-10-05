@@ -483,7 +483,7 @@ console.log(err)
                             }
                         });
                         
-                        if (bestMatch && bestDistance < 0.4) {
+                        if (bestMatch && bestDistance < 0.3) {
                             console.log("Best match found:", bestMatch);
                             res.json(bestMatch);
                         } else {
