@@ -134,7 +134,7 @@ export const getClassrooms = async (req, res) => {
                         secure: true,
                         auth: {
                             user: "d628587@gmail.com",
-                            pass: "sose ogiz orks eyvi"
+                            pass: process.env.EMAIL_PASSWORD
                         }
                     });
                     
@@ -321,7 +321,7 @@ try {
                     secure: true,
                     auth: {
                       user: "d628587@gmail.com",
-                      pass: "sose ogiz orks eyvi",
+                      pass: process.env.EMAIL_PASSWORD,
                     },
                   });
             
@@ -434,7 +434,7 @@ try {
                           secure: true,
                           auth: {
                               user: "d628587@gmail.com",
-                              pass: "sose ogiz orks eyvi",
+                              pass: process.env.EMAIL_PASSWORD,
                           },
                       });
           
@@ -541,7 +541,7 @@ try {
                         secure: true,
                         auth: {
                             user: "d628587@gmail.com",
-                            pass: "sose ogiz orks eyvi",
+                            pass: process.env.EMAIL_PASSWORD,
                         },
                     });
         

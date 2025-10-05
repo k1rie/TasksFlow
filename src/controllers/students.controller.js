@@ -28,7 +28,7 @@ let transporter =  nodeMailer.createTransport({
     secure: true,             // True para 465, false para otros puertos
     auth: {
       user: "d628587@gmail.com", // Tu correo
-      pass: "sose ogiz orks eyvi",         // Contraseña de tu correo
+      pass: process.env.EMAIL_PASSWORD,         // Contraseña de tu correo
     },
   });
 
@@ -94,7 +94,7 @@ rows.map((e)=>{
         secure: true,             // True para 465, false para otros puertos
         auth: {
           user: "d628587@gmail.com", // Tu correo
-          pass: "sose ogiz orks eyvi",         // Contraseña de tu correo
+          pass: process.env.EMAIL_PASSWORD,         // Contraseña de tu correo
         },
       });
 

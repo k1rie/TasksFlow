@@ -17,6 +17,7 @@ EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_USER=tu_email@gmail.com
 EMAIL_PASSWORD=tu_app_password_aqui
+EMAIL_PASSWORD=tu_app_password_aqui
 
 # JWT Secret (si usas autenticación)
 JWT_SECRET=tu_jwt_secret_muy_seguro_aqui
