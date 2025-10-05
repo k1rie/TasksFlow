@@ -5,11 +5,11 @@ dotenv.config()
 
 
 export const pool = createPool({
-    host: 'alphatech-labs.com',
-    user: 'alphate2_smartclass_admin',
-    password: 'HnhOS,,}eVe&',
-    database: 'alphate2_smartclass',
-    port: 3306,
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT,
     // Opciones válidas para mysql2
     waitForConnections: true,
     connectionLimit: 10,
