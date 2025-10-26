@@ -502,7 +502,7 @@ console.log(err)
               const[student,info] = await pool.query("SELECT * FROM students WHERE id = ? AND user = ?",[req.body.user_id,emailUser])
               if(student.length > 0){
                 
-                await fetch(`http://0.0.0.0:3005/register`, {
+                await fetch(`https://long-badger-k1rie-6758ceec.koyeb.app/register`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -549,7 +549,7 @@ console.log(err)
             }
             if(row.length > 0){
     
-                await fetch(`http://0.0.0.0:3005/search`, {
+                await fetch(`https://long-badger-k1rie-6758ceec.koyeb.app/search`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
