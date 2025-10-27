@@ -429,27 +429,48 @@ try {
                           [req.params.idGroup, emailUser]
                       );
           
-                      // 4. Obtener datos
+                      // 4. Obtener datos con cálculos corregidos
                       const [rows] = await pool.query(`
                           SELECT 
                               s.nombre AS nombre_alumno,
                               s.apellidos AS apellidos_alumno,
-                              COALESCE(SUM(ts.final_rate), 0) AS suma_total_calificaciones,
+                              -- Suma total de calificaciones (solo las que tienen valor)
+                              COALESCE(SUM(CASE 
+                                  WHEN ts.final_rate IS NOT NULL AND ts.final_rate > 0 
+                                  THEN ts.final_rate 
+                                  ELSE 0 
+                              END), 0) AS suma_total_calificaciones,
+                              -- Promedio corregido: suma de calificaciones / número total de tareas del grupo
                               CASE 
-                                  WHEN COUNT(ts.id) > 0 
-                                  THEN COALESCE(SUM(ts.final_rate), 0) / COUNT(ts.id)
+                                  WHEN COUNT(DISTINCT t.id) > 0 THEN (
+                                      COALESCE(SUM(CASE 
+                                          WHEN ts.final_rate IS NOT NULL AND ts.final_rate > 0 
+                                          THEN ts.final_rate 
+                                          ELSE 0 
+                                      END), 0) / COUNT(DISTINCT t.id)
+                                  )
                                   ELSE 0 
                               END AS promedio,
-                              COUNT(ts.id) AS numero_tareas,
-                              COALESCE(SUM(a.attendance), 0) AS suma_total_asistencias
+                              -- Número total de tareas del grupo
+                              COUNT(DISTINCT t.id) AS numero_tareas,
+                              -- Número de tareas completadas (con calificación)
+                              COUNT(CASE 
+                                  WHEN ts.final_rate IS NOT NULL AND ts.final_rate > 0 
+                                  THEN 1 
+                              END) AS tareas_completadas,
+                              -- Asistencias totales (corregido para evitar duplicados)
+                              (SELECT COUNT(*) 
+                               FROM attendence a2 
+                               WHERE a2.studentid = s.id 
+                               AND a2.attendance = 1) AS suma_total_asistencias
                           FROM 
                               students s
                           LEFT JOIN 
-                              tasks_students ts ON s.id = ts.task_for AND ts.user = s.user
-                          LEFT JOIN 
                               tasks t ON t.groupid = s.groupid AND t.user = s.user
                           LEFT JOIN 
-                              attendence a ON s.id = a.studentid
+                              tasks_students ts ON s.id = ts.task_for 
+                              AND ts.user = s.user 
+                              AND ts.name = t.name
                           LEFT JOIN 
                               classrooms c ON s.groupid = c.id
                           WHERE 
@@ -470,16 +491,20 @@ try {
                       sheet.cell("B1").value("Nombres");
                       sheet.cell("C1").value("Suma de Calificaciones");
                       sheet.cell("D1").value("Promedio");
-                      sheet.cell("E1").value("Asistencias");
+                      sheet.cell("E1").value("Tareas Totales");
+                      sheet.cell("F1").value("Tareas Completadas");
+                      sheet.cell("G1").value("Asistencias");
           
                       // Insertar datos
                       rows.forEach((row, index) => {
                           const rowIndex = index + 2;
                           sheet.cell(`A${rowIndex}`).value(row.apellidos_alumno);
                           sheet.cell(`B${rowIndex}`).value(row.nombre_alumno);
-                          sheet.cell(`C${rowIndex}`).value(row.suma_total_calificaciones);
-                          sheet.cell(`D${rowIndex}`).value(row.promedio);
-                          sheet.cell(`E${rowIndex}`).value(row.suma_total_asistencias);
+                          sheet.cell(`C${rowIndex}`).value(parseFloat(row.suma_total_calificaciones).toFixed(2));
+                          sheet.cell(`D${rowIndex}`).value(parseFloat(row.promedio).toFixed(2));
+                          sheet.cell(`E${rowIndex}`).value(row.numero_tareas);
+                          sheet.cell(`F${rowIndex}`).value(row.tareas_completadas);
+                          sheet.cell(`G${rowIndex}`).value(row.suma_total_asistencias);
                       });
           
                       const excelBuffer = await workbook.outputAsync();
