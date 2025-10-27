@@ -429,48 +429,25 @@ try {
                           [req.params.idGroup, emailUser]
                       );
           
-                      // 4. Obtener datos con cálculos corregidos
+                      // 4. Obtener datos
                       const [rows] = await pool.query(`
                           SELECT 
                               s.nombre AS nombre_alumno,
                               s.apellidos AS apellidos_alumno,
-                              -- Suma total de calificaciones (solo las que tienen valor)
-                              COALESCE(SUM(CASE 
-                                  WHEN ts.final_rate IS NOT NULL AND ts.final_rate > 0 
-                                  THEN ts.final_rate 
-                                  ELSE 0 
-                              END), 0) AS suma_total_calificaciones,
-                              -- Promedio corregido: suma de calificaciones / número total de tareas del grupo
+                              COALESCE(SUM(DISTINCT ts.final_rate), 0) AS suma_total_calificaciones,
                               CASE 
-                                  WHEN COUNT(DISTINCT t.id) > 0 THEN (
-                                      COALESCE(SUM(CASE 
-                                          WHEN ts.final_rate IS NOT NULL AND ts.final_rate > 0 
-                                          THEN ts.final_rate 
-                                          ELSE 0 
-                                      END), 0) / COUNT(DISTINCT t.id)
-                                  )
+                                  WHEN COUNT(DISTINCT CASE WHEN ts.final_rate IS NOT NULL THEN ts.id END) > 0 
+                                  THEN COALESCE(SUM(DISTINCT ts.final_rate), 0) / COUNT(DISTINCT CASE WHEN ts.final_rate IS NOT NULL THEN ts.id END)
                                   ELSE 0 
                               END AS promedio,
-                              -- Número total de tareas del grupo
-                              COUNT(DISTINCT t.id) AS numero_tareas,
-                              -- Número de tareas completadas (con calificación)
-                              COUNT(CASE 
-                                  WHEN ts.final_rate IS NOT NULL AND ts.final_rate > 0 
-                                  THEN 1 
-                              END) AS tareas_completadas,
-                              -- Asistencias totales (corregido para evitar duplicados)
-                              (SELECT COUNT(*) 
+                              COUNT(DISTINCT CASE WHEN ts.final_rate IS NOT NULL THEN ts.id END) AS numero_tareas,
+                              (SELECT COUNT(DISTINCT a2.id) 
                                FROM attendence a2 
-                               WHERE a2.studentid = s.id 
-                               AND a2.attendance = 1) AS suma_total_asistencias
+                               WHERE a2.studentid = s.id AND a2.attendance = 1) AS suma_total_asistencias
                           FROM 
                               students s
                           LEFT JOIN 
-                              tasks t ON t.groupid = s.groupid AND t.user = s.user
-                          LEFT JOIN 
-                              tasks_students ts ON s.id = ts.task_for 
-                              AND ts.user = s.user 
-                              AND ts.name = t.name
+                              tasks_students ts ON s.id = ts.task_for AND ts.user = s.user
                           LEFT JOIN 
                               classrooms c ON s.groupid = c.id
                           WHERE 
@@ -491,20 +468,16 @@ try {
                       sheet.cell("B1").value("Nombres");
                       sheet.cell("C1").value("Suma de Calificaciones");
                       sheet.cell("D1").value("Promedio");
-                      sheet.cell("E1").value("Tareas Totales");
-                      sheet.cell("F1").value("Tareas Completadas");
-                      sheet.cell("G1").value("Asistencias");
+                      sheet.cell("E1").value("Asistencias");
           
                       // Insertar datos
                       rows.forEach((row, index) => {
                           const rowIndex = index + 2;
                           sheet.cell(`A${rowIndex}`).value(row.apellidos_alumno);
                           sheet.cell(`B${rowIndex}`).value(row.nombre_alumno);
-                          sheet.cell(`C${rowIndex}`).value(parseFloat(row.suma_total_calificaciones).toFixed(2));
-                          sheet.cell(`D${rowIndex}`).value(parseFloat(row.promedio).toFixed(2));
-                          sheet.cell(`E${rowIndex}`).value(row.numero_tareas);
-                          sheet.cell(`F${rowIndex}`).value(row.tareas_completadas);
-                          sheet.cell(`G${rowIndex}`).value(row.suma_total_asistencias);
+                          sheet.cell(`C${rowIndex}`).value(row.suma_total_calificaciones);
+                          sheet.cell(`D${rowIndex}`).value(row.promedio);
+                          sheet.cell(`E${rowIndex}`).value(row.suma_total_asistencias);
                       });
           
                       const excelBuffer = await workbook.outputAsync();
@@ -571,18 +544,16 @@ try {
                             s.nombre AS nombre_alumno,
                             s.apellidos AS apellidos_alumno,
                             CASE 
-                                WHEN COUNT(DISTINCT t.id) > 0 THEN (
+                                WHEN COUNT(DISTINCT CASE WHEN ts.final_rate IS NOT NULL THEN ts.id END) > 0 THEN (
                                     COALESCE(SUM(CASE 
                                         WHEN ts.final_rate IS NOT NULL THEN ts.final_rate 
                                         ELSE 0 
-                                    END), 0) / COUNT(DISTINCT t.id)
+                                    END), 0) / COUNT(DISTINCT CASE WHEN ts.final_rate IS NOT NULL THEN ts.id END)
                                 )
                                 ELSE 0 
                             END AS promedio
                         FROM 
                             students s
-                        LEFT JOIN 
-                            tasks t ON t.groupid = s.groupid AND t.user = s.user
                         LEFT JOIN 
                             tasks_students ts ON s.id = ts.task_for 
                             AND ts.user = s.user
