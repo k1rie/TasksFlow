@@ -912,21 +912,16 @@ ORDER BY
                 const group = groupRow[0];
                 const groupName = `${group.grado}° ${group.grupo} - ${group.especialidad}`;
                 
-                // 4. Obtener estudiantes del grupo con sus calificaciones
+                // 4. Obtener estudiantes del grupo con suma de calificaciones
                 const [students] = await pool.query(`
                   SELECT 
                     s.id,
                     s.nombre,
                     s.apellidos,
-                    CASE 
-                      WHEN COUNT(DISTINCT CASE WHEN ts.final_rate IS NOT NULL THEN ts.id END) > 0 THEN (
-                        COALESCE(SUM(CASE 
-                          WHEN ts.final_rate IS NOT NULL THEN ts.final_rate 
-                          ELSE 0 
-                        END), 0) / COUNT(DISTINCT CASE WHEN ts.final_rate IS NOT NULL THEN ts.id END)
-                      )
-                      ELSE NULL 
-                    END AS promedio,
+                    COALESCE(SUM(CASE 
+                      WHEN ts.final_rate IS NOT NULL THEN ts.final_rate 
+                      ELSE 0 
+                    END), 0) AS suma_total,
                     COUNT(DISTINCT CASE WHEN ts.final_rate IS NOT NULL THEN ts.id END) AS numero_tareas
                   FROM 
                     students s
@@ -958,7 +953,7 @@ ORDER BY
                       id: student.id,
                       nombre: student.nombre,
                       apellidos: student.apellidos,
-                      promedio: student.promedio ? parseFloat(student.promedio).toFixed(2) : null,
+                      total: parseFloat(student.suma_total).toFixed(2),
                       numeroTareas: student.numero_tareas,
                       calificaciones: grades.map(g => ({
                         tarea: g.name,
