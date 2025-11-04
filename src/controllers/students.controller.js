@@ -15,8 +15,8 @@ export const sendQR = async(req,res)=>{
 const [data,info] = await pool.query("SELECT * FROM students WHERE id = ?",[req.body.idStudent])
 const student = data[0]
 
-const QRBuffer = await QRCode.toBuffer(`https://tasks-flow-b44f6.web.app/attendance/${student.id}/${student.nombre}/${student.apellidos}/${student.grado}/${student.grupo}/${student.especialidad}/${student.correo}`, {
-    errorCorrectionLevel: 'L', // Nivel de corrección de errores
+const QRBuffer = await QRCode.toBuffer(JSON.stringify({ id: student.id }), {
+    errorCorrectionLevel: 'L',
   });
 
 
@@ -134,8 +134,8 @@ rows.map((e)=>{
         [group[0][0].alumnos+1,req.body.especialidad,req.body.grado,req.body.grupo]
     )
 
-    const QRBuffer = await QRCode.toBuffer(`https://tasks-flow-b44f6.web.app/attendance/${data[0].insertId}/${req.body.nombre}/${req.body.apellidos}/${req.body.grado}/${req.body.grupo}/${req.body.especialidad}/${req.body.correo}`, {
-        errorCorrectionLevel: 'L', // Nivel de corrección de errores
+    const QRBuffer = await QRCode.toBuffer(JSON.stringify({ id: data[0].insertId }), {
+        errorCorrectionLevel: 'L',
       });
 
       console.log(QRBuffer)

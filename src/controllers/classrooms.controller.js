@@ -3,6 +3,7 @@ import nodeMailer from "nodemailer"
 import QRCode from "qrcode"
 import XlsxPopulate from "xlsx-populate"
 import { createStudent } from "./students.controller.js";
+import crypto from "crypto";
 
 async function queryWithRetry(sqlQuery, params, maxRetries = 3) {
     let retries = 0;
@@ -19,6 +20,19 @@ async function queryWithRetry(sqlQuery, params, maxRetries = 3) {
             }
         }
     }
+}
+
+// Utilidad para cifrar datos del QR con AES-256-GCM
+function encryptQrData(payloadObject) {
+  const secretRaw = process.env.QR_SECRET || "smartclass-default-secret";
+  const key = crypto.createHash("sha256").update(secretRaw).digest(); // 32 bytes
+  const iv = crypto.randomBytes(12); // GCM recomienda 12 bytes
+  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
+  const plaintext = Buffer.from(JSON.stringify(payloadObject), "utf8");
+  const encrypted = Buffer.concat([cipher.update(plaintext), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+  // iv.tag.ciphertext en base64
+  return Buffer.concat([iv, authTag, encrypted]).toString("base64");
 }
 
 
@@ -122,10 +136,8 @@ export const getClassrooms = async (req, res) => {
                         [students.length, req.body.idNewGroup]
                     );
                     
-                    const QRBuffer = await QRCode.toBuffer(
-                        `https://tasks-flow-b44f6.web.app/attendance/${data.insertId}/${student.nombre}/${student.apellidos}/${group[0].grado}/${group[0].grupo}/${group[0].especialidad}/${student.correo}`,
-                        { errorCorrectionLevel: 'L' }
-                    );
+                    const qrPayload = JSON.stringify({ id: data.insertId });
+                    const QRBuffer = await QRCode.toBuffer(qrPayload, { errorCorrectionLevel: 'L' });
                     
                     // Configurar el transporter
                     const transporter = nodeMailer.createTransport({
@@ -204,7 +216,7 @@ export const getClassrooms = async (req, res) => {
                                   </div>
                                 `,
                                 attachments: [{
-                                    filename: 'mi-nuevo-codigo-qr.png',
+                                    filename: 'codigo-qr-smartclass.png',
                                     content: QRBuffer,
                                     contentType: 'image/png'
                                 }]
@@ -693,3 +705,604 @@ ORDER BY
                 res.send(error);
               }
             };
+
+            // Generar enlace único para compartir calificaciones
+            export const generateGroupLink = async (req, res) => {
+              try {
+                // 1. Validación de autenticación
+                const authHeader = req.headers['authorization'];
+                if (!authHeader) {
+                  return res.status(401).json({ error: 'Autorización requerida' });
+                }
+                
+                const base64Credentials = authHeader.split(' ')[1];
+                const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+                const [emailUser, password] = credentials.split(':');
+                
+                // 2. Verificar usuario (profesor)
+                const [userRow] = await pool.query(
+                  "SELECT * FROM users WHERE email = ? AND password = ?",
+                  [emailUser, password]
+                );
+                
+                if (userRow.length === 0) {
+                  return res.status(401).json({ error: 'Credenciales inválidas' });
+                }
+                
+                // 3. Validar que el grupo existe y pertenece al profesor
+                const { groupId } = req.body;
+                if (!groupId) {
+                  return res.status(400).json({ error: 'groupId es requerido' });
+                }
+                
+                const [groupRow] = await pool.query(
+                  "SELECT * FROM classrooms WHERE id = ? AND user = ?",
+                  [groupId, emailUser]
+                );
+                
+                if (groupRow.length === 0) {
+                  return res.status(403).json({ error: 'No tienes permiso para generar enlaces para este grupo' });
+                }
+                
+                // 4. Generar hash único (usando crypto para mayor seguridad)
+                const hash = crypto.randomBytes(32).toString('hex');
+                
+                // 5. Verificar que el hash no existe (extremadamente improbable, pero por seguridad)
+                let attempts = 0;
+                let finalHash = hash;
+                while (attempts < 5) {
+                  const [existingLink] = await pool.query(
+                    "SELECT * FROM group_links WHERE hash = ?",
+                    [finalHash]
+                  );
+                  
+                  if (existingLink.length === 0) {
+                    break;
+                  }
+                  
+                  finalHash = crypto.randomBytes(32).toString('hex');
+                  attempts++;
+                }
+                
+                // 6. Insertar el enlace en la base de datos
+                const [insertResult] = await pool.query(
+                  "INSERT INTO group_links (group_id, hash, created_by) VALUES (?, ?, ?)",
+                  [groupId, finalHash, emailUser]
+                );
+                
+                // 7. Obtener información del grupo
+                const group = groupRow[0];
+                const groupName = `${group.grado}° ${group.grupo} - ${group.especialidad}`;
+                
+                // 8. Construir la URL completa (usando el dominio desde el frontend o variables de entorno)
+                const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+                const fullLink = `${baseUrl}/#/grades/${finalHash}`;
+                
+                // 9. Retornar respuesta
+                res.json({
+                  success: true,
+                  link: {
+                    id: insertResult.insertId,
+                    hash: finalHash,
+                    fullLink: fullLink,
+                    groupId: groupId,
+                    groupName: groupName,
+                    createdAt: new Date().toISOString(),
+                    createdBy: emailUser
+                  }
+                });
+              } catch (error) {
+                console.error('Error en generateGroupLink:', error);
+                res.status(500).json({ 
+                  error: 'Error al generar enlace',
+                  details: error.message 
+                });
+              }
+            };
+
+            // Obtener enlaces generados por un profesor
+            export const getGroupLinks = async (req, res) => {
+              try {
+                // 1. Validación de autenticación
+                const authHeader = req.headers['authorization'];
+                if (!authHeader) {
+                  return res.status(401).json({ error: 'Autorización requerida' });
+                }
+                
+                const base64Credentials = authHeader.split(' ')[1];
+                const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+                const [emailUser, password] = credentials.split(':');
+                
+                // 2. Verificar usuario (profesor)
+                const [userRow] = await pool.query(
+                  "SELECT * FROM users WHERE email = ? AND password = ?",
+                  [emailUser, password]
+                );
+                
+                if (userRow.length === 0) {
+                  return res.status(401).json({ error: 'Credenciales inválidas' });
+                }
+                
+                // 3. Obtener todos los enlaces generados por este profesor con información del grupo
+                const [links] = await pool.query(`
+                  SELECT 
+                    gl.id,
+                    gl.hash,
+                    gl.group_id,
+                    gl.created_at,
+                    gl.last_accessed_at,
+                    gl.access_count,
+                    c.grado,
+                    c.grupo,
+                    c.especialidad,
+                    CONCAT(c.grado, '° ', c.grupo, ' - ', c.especialidad) AS group_name
+                  FROM group_links gl
+                  INNER JOIN classrooms c ON gl.group_id = c.id
+                  WHERE gl.created_by = ?
+                  ORDER BY gl.created_at DESC
+                `, [emailUser]);
+                
+                // 4. Construir URLs completas
+                const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+                const linksWithUrls = links.map(link => ({
+                  id: link.id,
+                  hash: link.hash,
+                  groupId: link.group_id,
+                  groupName: link.group_name,
+                  fullLink: `${baseUrl}/#/grades/${link.hash}`,
+                  createdAt: link.created_at,
+                  lastAccessedAt: link.last_accessed_at,
+                  accessCount: link.access_count || 0
+                }));
+                
+                res.json({
+                  success: true,
+                  links: linksWithUrls
+                });
+              } catch (error) {
+                console.error('Error en getGroupLinks:', error);
+                res.status(500).json({ 
+                  error: 'Error al obtener enlaces',
+                  details: error.message 
+                });
+              }
+            };
+
+            // Obtener calificaciones por hash (endpoint público)
+            export const getGradesByHash = async (req, res) => {
+              try {
+                const { hash } = req.params;
+                
+                if (!hash) {
+                  return res.status(400).json({ error: 'Hash es requerido' });
+                }
+                
+                // 1. Verificar que el hash existe
+                const [linkRow] = await pool.query(
+                  "SELECT * FROM group_links WHERE hash = ?",
+                  [hash]
+                );
+                
+                if (linkRow.length === 0) {
+                  // Protección contra enumeración: no revelar si el hash existe o no
+                  return res.status(404).json({ 
+                    error: 'Enlace no válido o expirado' 
+                  });
+                }
+                
+                const link = linkRow[0];
+                const groupId = link.group_id;
+                
+                // 2. Actualizar estadísticas de acceso
+                await pool.query(
+                  "UPDATE group_links SET last_accessed_at = NOW(), access_count = access_count + 1 WHERE hash = ?",
+                  [hash]
+                );
+                
+                // 3. Obtener información del grupo (solo datos públicos)
+                const [groupRow] = await pool.query(
+                  "SELECT grado, grupo, especialidad FROM classrooms WHERE id = ?",
+                  [groupId]
+                );
+                
+                if (groupRow.length === 0) {
+                  return res.status(404).json({ error: 'Grupo no encontrado' });
+                }
+                
+                const group = groupRow[0];
+                const groupName = `${group.grado}° ${group.grupo} - ${group.especialidad}`;
+                
+                // 4. Obtener estudiantes del grupo con sus calificaciones
+                const [students] = await pool.query(`
+                  SELECT 
+                    s.id,
+                    s.nombre,
+                    s.apellidos,
+                    CASE 
+                      WHEN COUNT(DISTINCT CASE WHEN ts.final_rate IS NOT NULL THEN ts.id END) > 0 THEN (
+                        COALESCE(SUM(CASE 
+                          WHEN ts.final_rate IS NOT NULL THEN ts.final_rate 
+                          ELSE 0 
+                        END), 0) / COUNT(DISTINCT CASE WHEN ts.final_rate IS NOT NULL THEN ts.id END)
+                      )
+                      ELSE NULL 
+                    END AS promedio,
+                    COUNT(DISTINCT CASE WHEN ts.final_rate IS NOT NULL THEN ts.id END) AS numero_tareas
+                  FROM 
+                    students s
+                  LEFT JOIN 
+                    tasks_students ts ON s.id = ts.task_for 
+                  WHERE 
+                    s.groupid = ?
+                  GROUP BY 
+                    s.id, s.nombre, s.apellidos
+                  ORDER BY 
+                    s.apellidos ASC, s.nombre ASC
+                `, [groupId]);
+                
+                // 5. Obtener detalles de tareas y calificaciones (limitado a información no sensible)
+                const [tasks] = await pool.query(
+                  "SELECT id, name, rate FROM tasks WHERE groupid = ? ORDER BY id ASC",
+                  [groupId]
+                );
+                
+                // Para cada estudiante, obtener sus calificaciones por tarea
+                const studentsWithGrades = await Promise.all(
+                  students.map(async (student) => {
+                    const [grades] = await pool.query(
+                      "SELECT name, final_rate FROM tasks_students WHERE task_for = ? AND final_rate IS NOT NULL",
+                      [student.id]
+                    );
+                    
+                    return {
+                      id: student.id,
+                      nombre: student.nombre,
+                      apellidos: student.apellidos,
+                      promedio: student.promedio ? parseFloat(student.promedio).toFixed(2) : null,
+                      numeroTareas: student.numero_tareas,
+                      calificaciones: grades.map(g => ({
+                        tarea: g.name,
+                        calificacion: parseFloat(g.final_rate).toFixed(2)
+                      }))
+                    };
+                  })
+                );
+                
+                // 6. Retornar respuesta (sin información sensible como emails, IDs internos, etc.)
+                res.json({
+                  success: true,
+                  group: {
+                    nombre: groupName,
+                    grado: group.grado,
+                    grupo: group.grupo,
+                    especialidad: group.especialidad
+                  },
+                  students: studentsWithGrades,
+                  tasks: tasks.map(t => ({
+                    nombre: t.name,
+                    valor: parseFloat(t.rate).toFixed(2)
+                  })),
+                  linkInfo: {
+                    createdAt: link.created_at,
+                    accessCount: (link.access_count || 0) + 1
+                  }
+                });
+              } catch (error) {
+                console.error('Error en getGradesByHash:', error);
+                res.status(500).json({ 
+                  error: 'Error al obtener calificaciones',
+                  details: error.message 
+                });
+              }
+            };
+
+            // Eliminar enlace único
+            export const deleteGroupLink = async (req, res) => {
+              try {
+                // 1. Validación de autenticación
+                const authHeader = req.headers['authorization'];
+                if (!authHeader) {
+                  return res.status(401).json({ error: 'Autorización requerida' });
+                }
+                
+                const base64Credentials = authHeader.split(' ')[1];
+                const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+                const [emailUser, password] = credentials.split(':');
+                
+                // 2. Verificar usuario (profesor)
+                const [userRow] = await pool.query(
+                  "SELECT * FROM users WHERE email = ? AND password = ?",
+                  [emailUser, password]
+                );
+                
+                if (userRow.length === 0) {
+                  return res.status(401).json({ error: 'Credenciales inválidas' });
+                }
+                
+                // 3. Obtener el ID del enlace desde los parámetros
+                const { linkId } = req.params;
+                if (!linkId) {
+                  return res.status(400).json({ error: 'linkId es requerido' });
+                }
+                
+                // 4. Verificar que el enlace existe y pertenece al profesor
+                const [linkRow] = await pool.query(
+                  "SELECT * FROM group_links WHERE id = ? AND created_by = ?",
+                  [linkId, emailUser]
+                );
+                
+                if (linkRow.length === 0) {
+                  return res.status(403).json({ 
+                    error: 'No tienes permiso para eliminar este enlace o el enlace no existe' 
+                  });
+                }
+                
+                // 5. Eliminar el enlace
+                await pool.query(
+                  "DELETE FROM group_links WHERE id = ? AND created_by = ?",
+                  [linkId, emailUser]
+                );
+                
+                // 6. Retornar respuesta exitosa
+                res.json({
+                  success: true,
+                  message: 'Enlace eliminado exitosamente'
+                });
+              } catch (error) {
+                console.error('Error en deleteGroupLink:', error);
+                res.status(500).json({ 
+                  error: 'Error al eliminar enlace',
+                  details: error.message 
+                });
+              }
+            };
+
+// Generar enlace único para solicitar unión al grupo (profesor)
+export const generateJoinLink = async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).json({ error: 'Autorización requerida' });
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [emailUser, password] = credentials.split(':');
+
+    const [userRow] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?", [emailUser, password]);
+    if (userRow.length === 0) return res.status(401).json({ error: 'Credenciales inválidas' });
+
+    const { groupId } = req.body;
+    if (!groupId) return res.status(400).json({ error: 'groupId es requerido' });
+
+    const [groupRow] = await pool.query("SELECT * FROM classrooms WHERE id = ? AND user = ?", [groupId, emailUser]);
+    if (groupRow.length === 0) return res.status(403).json({ error: 'No tienes permiso para este grupo' });
+
+    let finalHash = crypto.randomBytes(32).toString('hex');
+    for (let i = 0; i < 5; i++) {
+      const [existing] = await pool.query("SELECT id FROM join_links WHERE hash = ?", [finalHash]);
+      if (existing.length === 0) break;
+      finalHash = crypto.randomBytes(32).toString('hex');
+    }
+
+    const [insert] = await pool.query(
+      "INSERT INTO join_links (group_id, hash, created_by) VALUES (?,?,?)",
+      [groupId, finalHash, emailUser]
+    );
+
+    const group = groupRow[0];
+    const groupName = `${group.grado}° ${group.grupo} - ${group.especialidad}`;
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const fullLink = `${baseUrl}/#/join/${finalHash}`;
+
+    res.json({
+      success: true,
+      link: {
+        id: insert.insertId,
+        hash: finalHash,
+        fullLink,
+        groupId,
+        groupName,
+        createdAt: new Date().toISOString(),
+        createdBy: emailUser,
+      }
+    });
+  } catch (error) {
+    console.error('Error en generateJoinLink:', error);
+    res.status(500).json({ error: 'Error al generar enlace de unión', details: error.message });
+  }
+};
+
+// Enviar solicitud pública de unión por hash
+export const submitJoinRequest = async (req, res) => {
+  try {
+    const { hash } = req.params;
+    const { nombre, apellidos, correo } = req.body;
+    if (!hash) return res.status(400).json({ error: 'Hash requerido' });
+    if (!nombre || !apellidos || !correo) return res.status(400).json({ error: 'Datos incompletos' });
+
+    const [linkRow] = await pool.query("SELECT * FROM join_links WHERE hash = ?", [hash]);
+    if (linkRow.length === 0) return res.status(404).json({ error: 'Enlace no válido' });
+
+    const groupId = linkRow[0].group_id;
+    const [groupRow] = await pool.query("SELECT grado, grupo, especialidad FROM classrooms WHERE id = ?", [groupId]);
+    if (groupRow.length === 0) return res.status(404).json({ error: 'Grupo no encontrado' });
+    const g = groupRow[0];
+
+    await pool.query(
+      `INSERT INTO student_join_requests (group_id, nombre, apellidos, correo, grado, grupo, especialidad)
+       VALUES (?,?,?,?,?,?,?)`,
+      [groupId, nombre, apellidos, correo, g.grado, g.grupo, g.especialidad]
+    );
+
+    res.json({ success: true, message: 'Solicitud enviada' });
+  } catch (error) {
+    console.error('Error en submitJoinRequest:', error);
+    res.status(500).json({ error: 'Error al enviar solicitud', details: error.message });
+  }
+};
+
+// Listar solicitudes por grupo (profesor)
+export const getJoinRequests = async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).json({ error: 'Autorización requerida' });
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [emailUser, password] = credentials.split(':');
+    const [userRow] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?", [emailUser, password]);
+    if (userRow.length === 0) return res.status(401).json({ error: 'Credenciales inválidas' });
+
+    const { groupId } = req.params;
+    const [groupRow] = await pool.query("SELECT id FROM classrooms WHERE id = ? AND user = ?", [groupId, emailUser]);
+    if (groupRow.length === 0) return res.status(403).json({ error: 'Sin permiso para este grupo' });
+
+    const [rows] = await pool.query(
+      `SELECT id, nombre, apellidos, correo, status, created_at
+       FROM student_join_requests WHERE group_id = ? AND status = 'pending' ORDER BY created_at DESC`,
+      [groupId]
+    );
+
+    res.json({ success: true, requests: rows });
+  } catch (error) {
+    console.error('Error en getJoinRequests:', error);
+    res.status(500).json({ error: 'Error al obtener solicitudes', details: error.message });
+  }
+};
+
+// Aprobar solicitud: crea estudiante y marca como aprobada
+export const approveJoinRequest = async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).json({ error: 'Autorización requerida' });
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [emailUser, password] = credentials.split(':');
+    const [userRow] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?", [emailUser, password]);
+    if (userRow.length === 0) return res.status(401).json({ error: 'Credenciales inválidas' });
+
+    const { id } = req.params;
+    const [reqRow] = await pool.query("SELECT * FROM student_join_requests WHERE id = ? AND status = 'pending'", [id]);
+    if (reqRow.length === 0) return res.status(404).json({ error: 'Solicitud no encontrada' });
+    const r = reqRow[0];
+
+    // Verificar propiedad del grupo
+    const [groupRow] = await pool.query("SELECT * FROM classrooms WHERE id = ? AND user = ?", [r.group_id, emailUser]);
+    if (groupRow.length === 0) return res.status(403).json({ error: 'Sin permiso para este grupo' });
+
+    // Crear estudiante
+    const [insertStudent] = await pool.query(
+      `INSERT INTO students (nombre, apellidos, correo, especialidad, grado, grupo, user, groupid)
+       VALUES (?,?,?,?,?,?,?,?)`,
+      [r.nombre, r.apellidos, r.correo, r.especialidad, r.grado, r.grupo, emailUser, r.group_id]
+    );
+
+    // Inicializar tasks_students en 0 para tareas existentes del grupo (opcional)
+    const [tasks] = await pool.query("SELECT name, rate FROM tasks WHERE groupid = ? AND user = ?", [r.group_id, emailUser]);
+    if (tasks.length > 0) {
+      await Promise.all(tasks.map(t => pool.query(
+        "INSERT INTO tasks_students (name, rate, final_rate, task_for, user) VALUES (?,?,0,?,?)",
+        [t.name, t.rate, insertStudent.insertId, emailUser]
+      )));
+    }
+
+    // Actualizar alumnos del grupo
+    await pool.query("UPDATE classrooms SET alumnos = alumnos + 1 WHERE id = ?", [r.group_id]);
+
+    // Generar QR sin datos sensibles (JSON) para el alumno aprobado
+    let qrBuffer = null;
+    try {
+      const qrPayload = JSON.stringify({ id: insertStudent.insertId });
+      qrBuffer = await QRCode.toBuffer(qrPayload, { errorCorrectionLevel: 'L' });
+    } catch (e) {
+      console.error('Error generando QR:', e);
+    }
+
+    // Marcar solicitud como aprobada
+    await pool.query(
+      "UPDATE student_join_requests SET status='approved', processed_at=NOW(), processed_by=? WHERE id = ?",
+      [emailUser, id]
+    );
+
+    // Enviar correo de confirmación al alumno con QR adjunto
+    try {
+      const transporter = nodeMailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: { user: "d628587@gmail.com", pass: process.env.EMAIL_PASSWORD }
+      });
+
+      const group = groupRow[0];
+      const mailOptions = {
+        from: '"SmartClass" <d628587@gmail.com>',
+        to: r.correo,
+        subject: `Solicitud aprobada - ${r.apellidos} ${r.nombre}`,
+        html: `<p>Hola ${r.nombre},</p>
+               <p>Tu solicitud para unirte al grupo ${group.grado}° ${group.grupo} - ${group.especialidad} ha sido <strong>aprobada</strong>.</p>
+               <p>Adjuntamos tu código QR personal para registrar asistencia. Guárdalo en tu teléfono.</p>
+               <p>Saludos,<br/>SmartClass</p>`,
+        attachments: qrBuffer ? [{ filename: 'codigo-qr-smartclass.png', content: qrBuffer, contentType: 'image/png' }] : []
+      };
+      await transporter.sendMail(mailOptions);
+    } catch (e) {
+      console.error('Error enviando correo de aprobación:', e);
+    }
+
+    res.json({ success: true, message: 'Solicitud aprobada y alumno agregado' });
+  } catch (error) {
+    console.error('Error en approveJoinRequest:', error);
+    res.status(500).json({ error: 'Error al aprobar solicitud', details: error.message });
+  }
+};
+
+// Rechazar solicitud
+export const rejectJoinRequest = async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).json({ error: 'Autorización requerida' });
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [emailUser, password] = credentials.split(':');
+    const [userRow] = await pool.query("SELECT * FROM users WHERE email = ? AND password = ?", [emailUser, password]);
+    if (userRow.length === 0) return res.status(401).json({ error: 'Credenciales inválidas' });
+
+    const { id } = req.params;
+    const [reqRow] = await pool.query("SELECT * FROM student_join_requests WHERE id = ? AND status = 'pending'", [id]);
+    if (reqRow.length === 0) return res.status(404).json({ error: 'Solicitud no encontrada' });
+
+    // Verificar propiedad del grupo
+    const [groupRow] = await pool.query("SELECT * FROM classrooms WHERE id = ? AND user = ?", [reqRow[0].group_id, emailUser]);
+    if (groupRow.length === 0) return res.status(403).json({ error: 'Sin permiso para este grupo' });
+
+    await pool.query(
+      "UPDATE student_join_requests SET status='rejected', processed_at=NOW(), processed_by=? WHERE id = ?",
+      [emailUser, id]
+    );
+
+    // Enviar correo de rechazo al alumno
+    try {
+      const transporter = nodeMailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: { user: "d628587@gmail.com", pass: process.env.EMAIL_PASSWORD }
+      });
+
+      const rj = reqRow[0];
+      await transporter.sendMail({
+        from: '"SmartClass" <d628587@gmail.com>',
+        to: rj.correo,
+        subject: `Solicitud rechazada - ${rj.apellidos} ${rj.nombre}`,
+        html: `<p>Hola ${rj.nombre},</p>
+               <p>Tu solicitud para unirte al grupo ha sido <strong>rechazada</strong>.</p>
+               <p>Si crees que se trata de un error, contacta a tu profesor.</p>
+               <p>Saludos,<br/>SmartClass</p>`
+      });
+    } catch (e) {
+      console.error('Error enviando correo de rechazo:', e);
+    }
+
+    res.json({ success: true, message: 'Solicitud rechazada' });
+  } catch (error) {
+    console.error('Error en rejectJoinRequest:', error);
+    res.status(500).json({ error: 'Error al rechazar solicitud', details: error.message });
+  }
+};
