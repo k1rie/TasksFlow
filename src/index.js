@@ -12,8 +12,8 @@ App.use(express.json())
 App.use(express.urlencoded({ extended: true }));
 
 
-App.listen(3001,()=>{
-console.log("listening on", 3001)
+App.listen(process.env.PORT,()=>{
+console.log("listening on", process.env.PORT)
 })
 
 App.use(classroomsRoutes)
